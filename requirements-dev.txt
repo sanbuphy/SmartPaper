@@ -1,0 +1,13 @@
+# SmartPaper 项目开发依赖
+
+# 基础依赖（引用主requirements文件）
+-r requirements.txt
+
+# 开发和测试工具
+pytest>=7.0.0
+mypy>=1.0.0
+black>=24.2.0
+isort>=5.13.2
+flake8>=7.0.0
+flake8-docstrings>=1.7.0
+pre-commit>=3.6.2

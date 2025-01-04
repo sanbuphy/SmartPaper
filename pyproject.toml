@@ -1,0 +1,60 @@
+[project]
+name = "smartpaper"
+version = "0.1.0"
+description = "智能论文处理工具"
+authors = [
+    {name = "li-xiu-qi", email = "lixiuqixiaoke@qq.com"}
+]
+requires-python = ">=3.10"
+readme = "README.md"
+license = "Apache-2.0"
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn>=0.23.0",
+    "pydantic>=2.4.0",  # 使用Pydantic v2
+    "pymupdf>=1.22.0",  # PDF处理库
+    "diskcache>=5.6.0", # 磁盘缓存库
+    "openai>=1.0.0",    # OpenAI客户端
+    "pillow>=10.0.0",   # 图像处理
+    "python-multipart>=0.0.6", # 文件上传支持
+    "pyyaml>=6.0",      # YAML文件解析
+    "numpy",            # 数值计算库
+    "opencv-contrib-python", # OpenCV扩展功能
+    "opencv-python",    # OpenCV基础库
+    "opencv-python-headless", # OpenCV无GUI版本
+    "wired-table-rec",  # 表格识别
+    "lineless-table-rec", # 表格识别
+    "table-cls",        # 表格识别
+    "paddlepaddle==3.0.0rc0", # PaddlePaddle CPU版本
+    "python-dotenv",    # 环境变量管理
+    "requests",         # HTTP请求库
+    "tqdm",             # 进度条
+    "urllib3",          # URL处理库
+    # PaddleX依赖需要特殊安装，在安装脚本中处理
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "mypy>=1.0.0",
+    "black>=24.2.0",    # 已更新版本
+    "isort>=5.13.2",    # 已更新版本
+    "flake8>=7.0.0",    # 已更新版本
+    "flake8-docstrings>=1.7.0", # 新增文档字符串检查
+    "pre-commit>=3.6.2", # 代码提交前检查
+]
+
+[tool.setuptools]
+packages = ["SmartPaper"]  # 只包含 SmartPaper 包
+
+[tool.black]
+line-length = 88
+target-version = ["py38", "py39", "py310"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+# 特殊依赖安装说明
+# 1. paddlepaddle应从官方源安装: pip install paddlepaddle==3.0.0rc0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+# 2. paddlex应从特定URL安装: pip install https://paddle-model-ecology.bj.bcebos.com/paddlex/whl/paddlex-3.0.0rc0-py3-none-any.whl
