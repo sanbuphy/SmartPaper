@@ -1,6 +1,6 @@
 # SmartPaper
 
-SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(OpenAI、Deepseek、智谱等),可以自动分析论文内容并生成结构化的分析报告。
+SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(OpenAI、Deepseek、Kimi、豆包、智谱等),可以自动分析论文内容并生成结构化的分析报告。
 
 ## 功能特点
 
@@ -8,6 +8,8 @@ SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(Op
   - OpenAI
   - Deepseek
   - SiliconFlow
+  - Kimi (Moonshot)
+  - 豆包 (Doubao)
   - 智谱AI
 - 支持多种输入方式:
   - 单个 PDF 文件
@@ -41,11 +43,12 @@ cp config/config.yaml.example config/config.yaml
 2. 在 `config.yaml` 中设置你的 API 密钥和其他配置:
 ```yaml
 llm:
-  provider: "openai_deepseek"  # 选择 LLM 提供商
+  provider: "openai_doubao"  # 选择 LLM 提供商
   max_requests: 10  # 最大请求次数限制
-  openai_deepseek:
+  openai_doubao:
     api_key: "your-api-key"
-    base_url: "https://api.deepseek.com/v1"
+    base_url: "https://ark.cn-beijing.volces.com/api/v3"
+    model: "doubao-v1"
 ```
 
 ### 3. 快速测试
@@ -170,3 +173,79 @@ outputs/
 ## 贡献指南
 
 欢迎提交 Issue 和 Pull Request!
+
+## 使用方法
+
+### 1. 命令行工具
+
+我们提供了一个命令行工具 `smartpaper.py`:
+
+1. 列出可用的提示词模板:
+```bash
+python smartpaper.py list-prompts
+```
+
+2. 处理论文 URL:
+```bash
+python smartpaper.py url https://arxiv.org/pdf/2312.12456.pdf --mode prompt --prompt summary
+```
+
+3. 处理本地 PDF:
+```bash
+python smartpaper.py pdf papers/example.pdf --mode agent
+```
+
+4. 批量处理文件夹:
+```bash
+python smartpaper.py batch papers/ --mode prompt --prompt full_analysis
+```
+
+所有命令都支持以下选项:
+- `--mode`: 处理模式 (prompt 或 agent)
+- `--prompt`: 提示词模板名称
+- `--format`: 输出格式 (markdown, csv, 或 folder)
+
+### 2. Python API
+
+你也可以在代码中直接使用 SmartPaper:
+
+```python
+from src.core.reader import SmartPaper
+
+# 初始化
+reader = SmartPaper(output_format='markdown')
+
+# 处理单个论文 URL (提示词模式)
+result = reader.process_paper_url(
+    url="https://arxiv.org/pdf/2312.12456.pdf",
+    mode="prompt",
+    prompt_name="summary"
+)
+
+# 处理本地 PDF (Agent 模式)
+result = reader.process_paper(
+    file_path="papers/example.pdf",
+    mode="agent"
+)
+
+# 批量处理文件夹
+results = reader.process_directory(
+    dir_path="papers/",
+    mode="prompt",
+    prompt_name="full_analysis"
+)
+```
+
+### 3. 示例脚本
+
+我们还提供了一个包含基本使用示例的脚本 `main.py`:
+
+```bash
+python main.py
+```
+
+这个脚本会展示:
+1. 可用的提示词模板
+2. URL 处理示例
+3. 本地 PDF 处理示例
+4. 批量处理示例

@@ -43,7 +43,10 @@ results/
 # 配置文件
 .env
 config.local.yaml
+config.yaml
 
 # 系统文件
 .DS_Store
 Thumbs.db
+config/config.yaml
+temp/*

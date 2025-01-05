@@ -2,14 +2,15 @@ import os
 from typing import Dict, List, Optional
 import yaml
 from pathlib import Path
+
 from .processor import PaperProcessor
 from .agent import PaperAgent
 from ..tools.markdown_converter import MarkdownConverter
 from ..utils.output_formatter import OutputFormatter
+from loguru import logger
 
 class SmartPaper:
     """论文阅读和存档工具"""
-    
     def __init__(self, config_file: str = None, output_format: str = 'markdown'):
         """初始化SmartPaper实例
         
@@ -21,10 +22,13 @@ class SmartPaper:
         if config_file is None:
             config_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
                                      'config', 'config.yaml')
+            
+        if not os.path.exists(config_file):
+            raise FileNotFoundError(f"配置文件不存在: {config_file}")
+            
         self.config = self._load_config(config_file)
-        
         # 初始化组件
-        self.converter: MarkdownConverter = MarkdownConverter(config=self.config.get('pdf', {}))
+        self.converter: MarkdownConverter = MarkdownConverter()
         self.processor: PaperProcessor = PaperProcessor(self.config)
         self.agent: PaperAgent = PaperAgent(self.config)
         self.output_formatter: OutputFormatter = OutputFormatter(self.config['output'])
@@ -61,7 +65,8 @@ class SmartPaper:
         try:
             # 转换PDF
             result = self.converter.convert(file_path)
-            
+            logger.info(f"转换PDF成功: {file_path}")
+            print(result)
             # 根据模式处理
             if mode == 'prompt':
                 analysis = self.processor.process(result['text_content'], prompt_name)
@@ -120,6 +125,8 @@ class SmartPaper:
         try:
             # 下载并转换PDF
             result = self.converter.convert_url(url)
+            print(result)
+            logger.info(f"处理论文URL成功，获得content: {url}")
             
             # 根据模式处理
             if mode == 'prompt':

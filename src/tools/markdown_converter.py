@@ -9,16 +9,13 @@ from markitdown import MarkItDown
 class MarkdownConverter:
     """通用文档转Markdown转换器"""
     
-    def __init__(self, config: Optional[Dict] = None, llm_client: Any = None, llm_model: str = None):
+    def __init__(self, llm_client: Any = None, llm_model: str = None):
         """初始化转换器
         
         Args:
-            config (Optional[Dict]): 配置信息
             llm_client (Any): LLM客户端,用于图像描述等高级功能
             llm_model (str): LLM模型名称
         """
-        self.config = config or {}
-        
         # 根据是否提供LLM客户端来初始化MarkItDown
         if llm_client and llm_model:
             self.md = MarkItDown(llm_client=llm_client, llm_model=llm_model)
@@ -54,30 +51,10 @@ class MarkdownConverter:
         try:
             result = self.md.convert(str(file_path))
             
-            # 提取元数据
-            metadata = {
-                'title': getattr(result, 'title', ''),
-                'author': getattr(result, 'author', ''),
-                'date': getattr(result, 'date', ''),
-                'file_type': ext,
-                'file_name': file_path.name,
-                'file_size': os.path.getsize(file_path)
-            }
-            
-            # 提取图片信息
-            images = []
-            if hasattr(result, 'images'):
-                for img in result.images:
-                    image_info = {
-                        'path': img.get('path', ''),
-                        'description': img.get('description', '')
-                    }
-                    images.append(image_info)
-            
             return {
                 'text_content': result.text_content,
-                'metadata': metadata,
-                'images': images
+                'metadata': {},
+                'images': []
             }
         except Exception as e:
             raise Exception(f"文件转换失败: {str(e)}")
@@ -92,29 +69,63 @@ class MarkdownConverter:
             Dict: 包含转换结果的字典
         """
         try:
-            # 下载文件
-            response = requests.get(url, stream=True)
-            response.raise_for_status()
+            # 判断是否为PDF文件
+            is_arxiv = "arxiv.org" in url.lower()
             
-            # 获取文件类型
-            content_type = response.headers.get('content-type', '')
-            ext = mimetypes.guess_extension(content_type) or '.pdf'
-            
-            # 创建临时文件
-            with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as temp_file:
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        temp_file.write(chunk)
-                temp_path = temp_file.name
-            
-            # 转换文件
-            try:
+            if is_arxiv:
+                # 创建temp目录(如果不存在)
+                temp_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'temp')
+                os.makedirs(temp_dir, exist_ok=True)
+                
+                # 从URL提取文件名
+                arxiv_id = url.split('/')[-1]
+                if not arxiv_id.endswith('.pdf'):
+                    arxiv_id += '.pdf'
+                temp_path = os.path.join(temp_dir, arxiv_id)
+                
+                # 检查是否已存在同名文件
+                if not os.path.exists(temp_path):
+                    # 下载PDF文件
+                    response = requests.get(url)
+                    response.raise_for_status()
+                    
+                    with open(temp_path, 'wb') as f:
+                        f.write(response.content)
+                
+                # 转换PDF文件
                 result = self.convert(temp_path)
+                
+                # 处理文本内容
+                text_content = result['text_content']
+                if "References" in text_content:
+                    text_content = text_content.split("References")[0]
+                text_content = "\n".join([line for line in text_content.split("\n") if line.strip()])
+                
+                # 更新结果
+                result['text_content'] = text_content
                 result['metadata']['url'] = url
                 return result
-            finally:
-                # 清理临时文件
-                os.unlink(temp_path)
+                
+            else:
+                # 获取网页内容
+                response = requests.get(url)
+                response.raise_for_status()
+                
+                # 使用MarkItDown转换HTML
+                result = response.text
+                
+                # 构建返回结果
+                metadata = {
+                    'title': url.split('/')[-1],
+                    'url': url,
+                    'file_type': 'html'
+                }
+                
+                return {
+                    'text_content': result,
+                    'metadata': metadata,
+                    'images': []
+                }
                 
         except Exception as e:
-            raise Exception(f"URL文件转换失败: {str(e)}")
+            raise Exception(f"URL转换失败: {str(e)}")

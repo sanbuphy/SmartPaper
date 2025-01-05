@@ -14,3 +14,4 @@ python-dotenv>=1.0.0
 arxiv>=2.0.0
 tqdm>=4.66.1
 markitdown>=0.1.0 
+loguru

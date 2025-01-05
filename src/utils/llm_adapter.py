@@ -123,6 +123,10 @@ def create_llm_adapter(config: Dict[str, Any]) -> BaseLLMAdapter:
         return OpenAIAdapter(config['openai_deepseek'])
     elif provider == 'openai_siliconflow':
         return OpenAIAdapter(config['openai_siliconflow'])
+    elif provider == 'openai_kimi':
+        return OpenAIAdapter(config['openai_kimi'])
+    elif provider == 'openai_doubao':
+        return OpenAIAdapter(config['openai_doubao'])
     elif provider == 'zhipuai':
         return ZhipuChatAdapter(config['zhipuai'])
     else:
