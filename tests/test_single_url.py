@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     TEST_PAPERS = [
         {
-            "url": "https://arxiv.org/pdf/1706.03762",  # 替换为实际的论文URL
+            "url": "https://arxiv.org/pdf/2305.12002",  # 替换为实际的论文URL
             "description": "GPT-4论文"
         },
         # 可以添加更多测试论文
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     # test_url(TEST_PAPERS[0]["url"], mode='agent')
     
     # 运行不同提示词的测试
-    prompts_to_test = ['yuanbao','coolpapaers']
+    prompts_to_test = ['yuanbao']
     for prompt in prompts_to_test:
         print(f"\n=== 运行{prompt}提示词测试 ===")
         test_url(TEST_PAPERS[0]["url"], mode='prompt', prompt_name=prompt)
