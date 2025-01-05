@@ -17,11 +17,11 @@ SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(Op
   - 论文 URL
 - 灵活的分析模式:
   - 单提示词模式: 使用预设的提示词模板进行分析
-  - Agent 模式: 智能对话式分析
+  - Agent 模式: 智能对话式分析 (开发中)
 - 多种输出格式:
   - Markdown
-  - CSV
-  - 结构化文件夹
+  - CSV (开发中)
+  - 结构化文件夹 (开发中)
 - 可配置的提示词模板
 - 请求次数限制保护
 
@@ -42,77 +42,53 @@ cp config/config.yaml.example config/config.yaml
 
 2. 在 `config.yaml` 中设置你的 API 密钥和其他配置:
 ```yaml
-llm:
-  provider: "openai_doubao"  # 选择 LLM 提供商
-  max_requests: 10  # 最大请求次数限制
-  openai_doubao:
+  openai_deepseek:
     api_key: "your-api-key"
-    base_url: "https://ark.cn-beijing.volces.com/api/v3"
-    model: "doubao-v1"
+    base_url: "https://api.deepseek.com/v1"
+    model: "deepseek-chat"
+    temperature: 0.7
+    max_tokens: 8192
 ```
 
-### 3. 快速测试
+### 3. 使用方法
 
-我们提供了几个测试脚本来验证功能:
+#### 命令行使用
 
-1. 测试单个 URL:
+1. 查看帮助:
 ```bash
-python tests/test_single_url.py
+python main.py -h
 ```
 
-2. 测试本地 PDF:
+2. 使用默认提示词模板分析论文:
 ```bash
-python tests/test_pdf_converter.py
+python main.py https://arxiv.org/pdf/2312.12456.pdf
 ```
 
-3. 测试批量处理:
+3. 指定提示词模板:
 ```bash
-python tests/test_batch_papers.py
+python main.py https://arxiv.org/pdf/2312.12456.pdf -p coolpapaers
 ```
 
-### 4. 使用示例
-
-```python
-from src.core.reader import SmartPaper
-
-# 初始化
-reader = SmartPaper(output_format='markdown')
-
-# 处理单个论文 URL (提示词模式)
-result = reader.process_paper_url(
-    url="https://arxiv.org/pdf/2312.12456.pdf",
-    mode="prompt",
-    prompt_name="summary"
-)
-
-# 处理本地 PDF (Agent 模式)
-result = reader.process_paper(
-    file_path="papers/example.pdf",
-    mode="agent"
-)
-
-# 批量处理文件夹
-results = reader.process_directory(
-    dir_path="papers/",
-    mode="prompt",
-    prompt_name="full_analysis"
-)
+4. 不提供URL时会使用默认论文URL:
+```bash
+python main.py -p yuanbao
 ```
 
-## 提示词模板
+#### 提示词模板
 
 当前支持的提示词模板:
-- `summary`: 论文总体摘要分析
-- `methodology`: 研究方法论分析
-- `results`: 实验结果分析
-- `contribution`: 主要贡献分析
-- `full_analysis`: 全面深入分析
+- `yuanbao`: 类似混元元宝的总结风格，包含研究背景、方法、实验设计和结果分析
+- `coolpapaers`: 类似 papers.cool 的分析风格，包含问题定义、相关研究、解决方案、实验和未来方向
+- `methodology`: 专注于研究方法论分析
+- `results`: 专注于实验结果分析
+- `contribution`: 专注于主要贡献分析
+- `full_analysis`: 全面深入的分析
 
-你可以在 `config/prompts.yaml` 中自定义新的提示词模板。
+#### 输出结果
 
-## 输出示例
+分析结果将保存在 `outputs` 目录下，文件名格式为 `analysis_prompt_{prompt_name}.md`。
 
-1. Markdown 格式:
+示例输出:
 ```markdown
 # 论文分析报告
 
@@ -123,129 +99,37 @@ results = reader.process_directory(
 - 分析时间: 2024-01-20T10:30:00
 
 ## 分析结果
-### Summary
-...
-```
-
-2. CSV 格式包含以下字段:
-- title
-- url
-- author
-- date
-- summary
-- methodology
-- results
-- timestamp
-
-3. 文件夹格式:
-```
-outputs/
-  └── paper_analysis/
-      ├── metadata.json
-      ├── summary.md
-      ├── methodology.md
-      └── results.md
+[分析内容]
 ```
 
 ## 注意事项
 
-1. 请求次数限制:
-   - 默认限制为 10 次请求
-   - 可以通过 `reset_request_count()` 重置计数器
-   - 超过限制会抛出异常
+1. API 密钥:
+   - 请确保在配置文件中设置了正确的 API 密钥
+   - 不同提供商的 API 密钥格式可能不同
 
-2. 文件支持:
-   - 支持常见的 PDF 文件格式
+2. URL 格式:
+   - 目前主要支持 arXiv 的论文 URL
    - URL 必须直接指向 PDF 文件
 
-3. 输出目录:
-   - 默认输出到 `outputs/` 目录
-   - 可以在配置文件中修改输出路径
+3. 请求限制:
+   - 默认限制为每次运行最多 10 次请求
+   - 可以在配置文件中调整 `max_requests` 的值
+
+4. 输出目录:
+   - 程序会自动创建 `outputs` 目录
+   - 同名文件会被覆盖，请注意备份
 
 ## 开发计划
 
-- [ ] 添加更多 LLM 提供商支持
-- [ ] 改进 Agent 模式的对话能力
-- [ ] 添加更多文件格式支持
-- [ ] 添加 Web 界面
-- [ ] 支持并行处理
+- [ ] 支持 Agent 模式
+- [ ] 添加 CSV 输出格式
+- [ ] 添加结构化文件夹输出
+- [ ] 支持更多论文来源
+- [ ] 添加批量处理功能
+- [ ] 添加进度显示
+- [ ] 支持自定义提示词模板
 
 ## 贡献指南
 
 欢迎提交 Issue 和 Pull Request!
-
-## 使用方法
-
-### 1. 命令行工具
-
-我们提供了一个命令行工具 `smartpaper.py`:
-
-1. 列出可用的提示词模板:
-```bash
-python smartpaper.py list-prompts
-```
-
-2. 处理论文 URL:
-```bash
-python smartpaper.py url https://arxiv.org/pdf/2312.12456.pdf --mode prompt --prompt summary
-```
-
-3. 处理本地 PDF:
-```bash
-python smartpaper.py pdf papers/example.pdf --mode agent
-```
-
-4. 批量处理文件夹:
-```bash
-python smartpaper.py batch papers/ --mode prompt --prompt full_analysis
-```
-
-所有命令都支持以下选项:
-- `--mode`: 处理模式 (prompt 或 agent)
-- `--prompt`: 提示词模板名称
-- `--format`: 输出格式 (markdown, csv, 或 folder)
-
-### 2. Python API
-
-你也可以在代码中直接使用 SmartPaper:
-
-```python
-from src.core.reader import SmartPaper
-
-# 初始化
-reader = SmartPaper(output_format='markdown')
-
-# 处理单个论文 URL (提示词模式)
-result = reader.process_paper_url(
-    url="https://arxiv.org/pdf/2312.12456.pdf",
-    mode="prompt",
-    prompt_name="summary"
-)
-
-# 处理本地 PDF (Agent 模式)
-result = reader.process_paper(
-    file_path="papers/example.pdf",
-    mode="agent"
-)
-
-# 批量处理文件夹
-results = reader.process_directory(
-    dir_path="papers/",
-    mode="prompt",
-    prompt_name="full_analysis"
-)
-```
-
-### 3. 示例脚本
-
-我们还提供了一个包含基本使用示例的脚本 `main.py`:
-
-```bash
-python main.py
-```
-
-这个脚本会展示:
-1. 可用的提示词模板
-2. URL 处理示例
-3. 本地 PDF 处理示例
-4. 批量处理示例
