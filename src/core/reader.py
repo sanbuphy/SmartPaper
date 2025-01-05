@@ -27,11 +27,14 @@ class SmartPaper:
             raise FileNotFoundError(f"配置文件不存在: {config_file}")
             
         self.config = self._load_config(config_file)
+        logger.info(f"加载配置文件成功: {config_file}")
+        
         # 初始化组件
         self.converter: MarkdownConverter = MarkdownConverter()
         self.processor: PaperProcessor = PaperProcessor(self.config)
         self.agent: PaperAgent = PaperAgent(self.config)
         self.output_formatter: OutputFormatter = OutputFormatter(self.config['output'])
+        logger.info("初始化组件完成")
         
         # 设置输出格式
         self.output_format = output_format
@@ -66,7 +69,7 @@ class SmartPaper:
             # 转换PDF
             result = self.converter.convert(file_path)
             logger.info(f"转换PDF成功: {file_path}")
-            print(result)
+           
             # 根据模式处理
             if mode == 'prompt':
                 analysis = self.processor.process(result['text_content'], prompt_name)
@@ -124,15 +127,16 @@ class SmartPaper:
         """
         try:
             # 下载并转换PDF
+            logger.info(f"开始处理论文URL: {url}")
             result = self.converter.convert_url(url)
-            print(result)
-            logger.info(f"处理论文URL成功，获得content: {url}")
+            logger.info("PDF转换完成，开始分析")
             
             # 根据模式处理
             if mode == 'prompt':
                 analysis = self.processor.process(result['text_content'], prompt_name)
             else:
                 analysis = self.agent.analyze(result['text_content'])
+            logger.info(f"分析完成，使用模式: {mode}")
             
             # 格式化输出
             output = self.output_formatter.format(

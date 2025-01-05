@@ -5,6 +5,7 @@ import tempfile
 import requests
 import mimetypes
 from markitdown import MarkItDown
+from loguru import logger
 
 class MarkdownConverter:
     """通用文档转Markdown转换器"""
@@ -21,6 +22,7 @@ class MarkdownConverter:
             self.md = MarkItDown(llm_client=llm_client, llm_model=llm_model)
         else:
             self.md = MarkItDown()
+        logger.info("初始化MarkdownConverter完成")
             
         # 支持的文件类型
         self.supported_extensions = {
@@ -86,14 +88,17 @@ class MarkdownConverter:
                 # 检查是否已存在同名文件
                 if not os.path.exists(temp_path):
                     # 下载PDF文件
+                    logger.info(f"开始下载PDF: {url}")
                     response = requests.get(url)
                     response.raise_for_status()
                     
                     with open(temp_path, 'wb') as f:
                         f.write(response.content)
+                    logger.info("PDF下载完成")
                 
                 # 转换PDF文件
                 result = self.convert(temp_path)
+                logger.info("PDF转换完成")
                 
                 # 处理文本内容
                 text_content = result['text_content']

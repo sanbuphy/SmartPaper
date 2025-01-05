@@ -68,7 +68,7 @@ if __name__ == "__main__":
     # test_url(TEST_PAPERS[0]["url"], mode='agent')
     
     # 运行不同提示词的测试
-    prompts_to_test = ['coolpapaers',]
+    prompts_to_test = ['yuanbao','coolpapaers']
     for prompt in prompts_to_test:
         print(f"\n=== 运行{prompt}提示词测试 ===")
         test_url(TEST_PAPERS[0]["url"], mode='prompt', prompt_name=prompt)

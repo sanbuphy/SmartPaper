@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 from langchain.chat_models import ChatOpenAI
 from ..prompts.prompt_library import get_prompt
+from loguru import logger
 
 class PaperProcessor:
     """论文处理器"""
@@ -15,6 +16,7 @@ class PaperProcessor:
         self.llm = self._init_llm()
         self.request_count = 0
         self.max_requests = config['llm'].get('max_requests', 10)
+        logger.info(f"初始化PaperProcessor完成，使用模型: {config['llm']['provider']}")
         
     def _init_llm(self) -> ChatOpenAI:
         """初始化LLM模型"""
@@ -50,6 +52,7 @@ class PaperProcessor:
         if prompt_name is None:
             prompt_name = self.config['prompts']['default']
         prompt_template = get_prompt(prompt_name)
+        logger.info(f"使用提示词模板: {prompt_name}")
         
         # 填充提示词
         prompt = prompt_template.format(text=text)
