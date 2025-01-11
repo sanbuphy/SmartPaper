@@ -61,11 +61,12 @@ class MarkdownConverter:
         except Exception as e:
             raise Exception(f"文件转换失败: {str(e)}")
 
-    def convert_url(self, url: str) -> Dict:
+    def convert_url(self, url: str, description: str = None) -> Dict:
         """从URL下载并转换文件
         
         Args:
             url (str): 文件URL
+            description (str, optional): 论文描述
             
         Returns:
             Dict: 包含转换结果的字典
@@ -109,6 +110,8 @@ class MarkdownConverter:
                 # 更新结果
                 result['text_content'] = text_content
                 result['metadata']['url'] = url
+                if description:
+                    result['metadata']['description'] = description
                 return result
                 
             else:

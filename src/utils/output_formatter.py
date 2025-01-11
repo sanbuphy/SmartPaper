@@ -63,6 +63,8 @@ class OutputFormatter:
         markdown.append(f"- 日期: {metadata.get('date', 'N/A')}")
         if 'url' in metadata:
             markdown.append(f"- URL: {metadata['url']}")
+        if 'description' in metadata:
+            markdown.append(f"- 描述: {metadata['description']}")
         markdown.append(f"- 分析时间: {timestamp}\n")
         
         # 添加分析内容

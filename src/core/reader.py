@@ -114,13 +114,14 @@ class SmartPaper:
                 
         return results
 
-    def process_paper_url(self, url: str, mode: str = 'prompt', prompt_name: str = None) -> Dict:
+    def process_paper_url(self, url: str, mode: str = 'prompt', prompt_name: str = None, description: str = None) -> Dict:
         """处理论文URL
         
         Args:
             url (str): 论文URL
             mode (str): 处理模式 ('prompt' 或 'agent')
             prompt_name (str, optional): 提示词名称
+            description (str, optional): 论文描述
             
         Returns:
             Dict: 处理结果
@@ -128,7 +129,7 @@ class SmartPaper:
         try:
             # 下载并转换PDF
             logger.info(f"开始处理论文URL: {url}")
-            result = self.converter.convert_url(url)
+            result = self.converter.convert_url(url, description=description)
             logger.info("PDF转换完成，开始分析")
             
             # 根据模式处理

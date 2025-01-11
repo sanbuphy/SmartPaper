@@ -8,13 +8,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.core.reader import SmartPaper
 from src.prompts.prompt_library import list_prompts
 
-def test_url(url: str, mode: str = 'agent', prompt_name: str = None):
+def test_url(url: str, mode: str = 'agent', prompt_name: str = None, description: str = None):
     """测试单个URL论文
 
     Args:
         url (str): 论文URL
         mode (str): 分析模式 ('agent' 或 'prompt')
         prompt_name (str, optional): 提示词名称
+        description (str, optional): 论文描述
     """
     reader = SmartPaper(output_format='markdown')
     
@@ -23,9 +24,11 @@ def test_url(url: str, mode: str = 'agent', prompt_name: str = None):
     if mode == 'prompt':
         print(f"提示词: {prompt_name or '默认提示词'}")
     print(f"论文URL: {url}")
+    if description:
+        print(f"论文描述: {description}")
     print(f"{'='*50}\n")
     
-    result = reader.process_paper_url(url, mode=mode, prompt_name=prompt_name)
+    result = reader.process_paper_url(url, mode=mode, prompt_name=prompt_name, description=description)
     
     # 创建outputs目录(如果不存在)
     output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'outputs')
