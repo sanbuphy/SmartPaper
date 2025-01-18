@@ -30,7 +30,7 @@ class SmartPaper:
         logger.info(f"加载配置文件成功: {config_file}")
         
         # 初始化组件
-        self.converter: MarkdownConverter = MarkdownConverter()
+        self.converter: MarkdownConverter = MarkdownConverter(config=self.config)
         self.processor: PaperProcessor = PaperProcessor(self.config)
         self.agent: PaperAgent = PaperAgent(self.config)
         self.output_formatter: OutputFormatter = OutputFormatter(self.config['output'])
