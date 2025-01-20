@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import BaseMessage, HumanMessage, AIMessage, SystemMessage
 import zhipuai
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 
 class BaseLLMAdapter(ABC):
     """LLM适配器基类"""

@@ -1,5 +1,5 @@
 from typing import Dict, Optional
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from ..prompts.prompt_library import get_prompt
 from loguru import logger
 
