@@ -1,7 +1,7 @@
 import os
 import sys
 from typing import Dict, List
-
+import re
 # 添加项目根目录到Python路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -36,7 +36,7 @@ def test_urls(urls: List[Dict], mode: str = 'agent', prompt_name: str = None):
         print(f"URL: {paper['url']}\n")
         
         # 生成文件名(取description前8个单词)
-        description_words = paper['description'].split()[:8]
+        description_words = re.sub(r'[^\w\s-：]', '_', paper['description']).split()[:8]
         filename = '_'.join(description_words)
         output_path = os.path.join(output_dir, f'{filename}_{mode}_{prompt_name or "default"}.md')
         
@@ -64,71 +64,6 @@ if __name__ == "__main__":
             "url": "https://arxiv.org/pdf/2203.14465.pdf",
             "description": "STaR: Bootstrapping Reasoning With Reasoning (NeurIPS 2022)"
         },
-        {
-            "url": "https://arxiv.org/pdf/2110.07178.pdf", 
-            "description": "Symbolic Knowledge Distillation: from General Language Models to Commonsense Models (NAACL 2022)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2202.04538.pdf",
-            "description": "Generating Training Data with Language Models: Towards Zero-Shot Language Understanding (NeurIPS 2022)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2202.07922.pdf",
-            "description": "ZeroGen: Efficient Zero-shot Learning via Dataset Generation (EMNLP 2022)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2303.17760.pdf",
-            "description": "CAMEL: Communicative Agents for Mind Exploration of Large Language Model Society (NeurIPS 2023)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2401.01335.pdf",
-            "description": "Self-Play Fine-Tuning Converts Weak Language Models to Strong Language Models (ICML 2024)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2401.10020.pdf",
-            "description": "Self-Rewarding Language Models (Arxiv 2024)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2402.13064.pdf",
-            "description": "Synthetic Data (Almost) from Scratch: Generalized Instruction Tuning for Language Models (Arxiv 2024)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2212.10560.pdf",
-            "description": "Self-instruct: Aligning language models with self-generated instructions (ACL 2023)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2401.16380.pdf",
-            "description": "Rephrasing the Web: A Recipe for Compute and Data-Efficient Language Modeling (ACL 2024)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2310.17876.pdf",
-            "description": "TarGEN: Targeted Data Generation with Large Language Models (COLM 2024)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2406.00770.pdf", 
-            "description": "Automatic Instruction Evolving for Large Language Models (Arxiv 2024)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2406.20094",
-            "description": "Scaling Synthetic Data Creation with 1,000,000,000 Personas (Arxiv 2024)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2404.10642",
-            "description": "Self-playing Adversarial Language Game Enhances LLM Reasoning (Arxiv 2024)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2409.08239",
-            "description": "Source2Synth: Synthetic Data Generation and Curation Grounded in Real Data Sources (Arxiv 2024)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2402.18334",
-            "description": "Learning to Generate Instruction Tuning Datasets for Zero-Shot Task Adaptation (ACL Findings 2024)"
-        },
-        {
-            "url": "https://arxiv.org/pdf/2406.08464",
-            "description": "Magpie: Alignment Data Synthesis from Scratch by Prompting Aligned LLMs with Nothing (Arxiv 2024)"
-        }
-        
     ]
     
     # # 使用Agent模式测试所有论文
