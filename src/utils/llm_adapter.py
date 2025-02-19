@@ -21,6 +21,18 @@ class BaseLLMAdapter(ABC):
         pass
 
     @abstractmethod
+    def stream(self, messages: List[BaseMessage]):
+        """流式调用LLM处理消息
+
+        Args:
+            messages (List[BaseMessage]): 消息列表
+
+        Yields:
+            str: 流式输出的文本片段
+        """
+        pass
+
+    @abstractmethod
     def update_api_key(self, api_key: str):
         """更新API密钥
 
@@ -44,12 +56,27 @@ class OpenAIAdapter(BaseLLMAdapter):
             base_url=config.get('base_url'),  # 可选的自定义API端点
             model=config['model'],
             temperature=config['temperature'],
-            max_tokens=config['max_tokens']
+            max_tokens=config['max_tokens'],
+            streaming=False
+        )
+        self.stream_client = ChatOpenAI(
+            api_key=config['api_key'],
+            base_url=config.get('base_url'),
+            model=config['model'],
+            temperature=config['temperature'],
+            max_tokens=config['max_tokens'],
+            streaming=True
         )
 
     def __call__(self, messages: List[BaseMessage]) -> AIMessage:
         """调用OpenAI处理消息"""
         return self.client(messages)
+
+    def stream(self, messages: List[BaseMessage]):
+        """流式调用OpenAI处理消息"""
+        for chunk in self.stream_client.stream(messages):
+            if chunk.content:
+                yield chunk.content
 
     def update_api_key(self, api_key: str):
         """更新API密钥"""
@@ -59,7 +86,16 @@ class OpenAIAdapter(BaseLLMAdapter):
             base_url=self.config.get('base_url'),
             model=self.config['model'],
             temperature=self.config['temperature'],
-            max_tokens=self.config['max_tokens']
+            max_tokens=self.config['max_tokens'],
+            streaming=False
+        )
+        self.stream_client = ChatOpenAI(
+            api_key=api_key,
+            base_url=self.config.get('base_url'),
+            model=self.config['model'],
+            temperature=self.config['temperature'],
+            max_tokens=self.config['max_tokens'],
+            streaming=True
         )
 
 class ZhipuChatAdapter(BaseLLMAdapter):
@@ -79,17 +115,7 @@ class ZhipuChatAdapter(BaseLLMAdapter):
 
     def __call__(self, messages: List[BaseMessage]) -> AIMessage:
         """调用智谱AI处理消息"""
-        # 转换消息格式
-        zhipu_messages = []
-        for msg in messages:
-            if isinstance(msg, SystemMessage):
-                zhipu_messages.append({"role": "system", "content": msg.content})
-            elif isinstance(msg, HumanMessage):
-                zhipu_messages.append({"role": "user", "content": msg.content})
-            elif isinstance(msg, AIMessage):
-                zhipu_messages.append({"role": "assistant", "content": msg.content})
-
-        # 调用智谱AI API
+        zhipu_messages = self._convert_messages(messages)
         response = zhipuai.model_api.invoke(
             model=self.model,
             prompt=zhipu_messages,
@@ -101,6 +127,34 @@ class ZhipuChatAdapter(BaseLLMAdapter):
             raise Exception(f"智谱AI API调用失败: {response['msg']}")
 
         return AIMessage(content=response['data']['choices'][0]['content'])
+
+    def stream(self, messages: List[BaseMessage]):
+        """流式调用智谱AI处理消息"""
+        zhipu_messages = self._convert_messages(messages)
+        response = zhipuai.model_api.sse_invoke(
+            model=self.model,
+            prompt=zhipu_messages,
+            temperature=self.temperature,
+            max_tokens=self.max_tokens
+        )
+
+        for event in response.events():
+            if event.event == "add":
+                yield event.data
+            elif event.event == "error" or event.event == "interrupted":
+                raise Exception(f"智谱AI流式调用失败: {event.data}")
+
+    def _convert_messages(self, messages: List[BaseMessage]) -> List[Dict]:
+        """转换消息格式"""
+        zhipu_messages = []
+        for msg in messages:
+            if isinstance(msg, SystemMessage):
+                zhipu_messages.append({"role": "system", "content": msg.content})
+            elif isinstance(msg, HumanMessage):
+                zhipu_messages.append({"role": "user", "content": msg.content})
+            elif isinstance(msg, AIMessage):
+                zhipu_messages.append({"role": "assistant", "content": msg.content})
+        return zhipu_messages
 
     def update_api_key(self, api_key: str):
         """更新API密钥"""
