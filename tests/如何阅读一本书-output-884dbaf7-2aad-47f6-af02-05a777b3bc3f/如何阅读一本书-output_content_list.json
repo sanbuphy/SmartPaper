@@ -1,0 +1,94 @@
+[
+    {
+        "type": "text",
+        "text": "HOWTOREADAI BOOK如何阅读一本书",
+        "text_level": 1,
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "",
+        "page_idx": 0
+    },
+    {
+        "type": "image",
+        "img_path": "images/49ed06841be864ffd76f51d3404c5856aeb242f958280afced992bb4d9861cbd.jpg",
+        "img_caption": [],
+        "img_footnote": [],
+        "page_idx": 0
+    },
+    {
+        "type": "image",
+        "img_path": "images/0e20c5dc6473759d6d13b14370223817b2ea281340eb5becf2efbbab41e87a15.jpg",
+        "img_caption": [],
+        "img_footnote": [],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "如何阅读一本书",
+        "text_level": 1,
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "每本书的封面之下都有一套自己的骨架，作为一个分析阅读的读者，你的责任就是要找出这个骨架。一本书出现在你面前时，肌肉包着骨头，衣服包裹着肌肉，可说是盛装而来。你用不着揭开它的外衣或是撕去它的肌肉，才能得到在柔软表皮下的那套骨架。但是你一定要用一双X光般的透视眼来看这本书，因为那是你了解一本书、掌握其骨架的基础。",
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "本书初版于1940年，1972年大幅增订改写为新版。不论什么时候读，都不能不叹服作者对阅读用心之深，视野之广。不懂阅读的人，初探阅读的人，读这本书可以少走冤枉路。对阅读有所体会的人，读这本书可以有更深的印证和领悟。这是一本有关阅读的永不褪色的经典。",
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "如何阅读一本书",
+        "text_level": 1,
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "莫提默·J.艾德勒[美] 著查尔斯·范多伦郝明义 朱衣译",
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "商务印书馆",
+        "text_level": 1,
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "2004年·北京",
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "图书在版编目 ((IP)数据",
+        "text_level": 1,
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "如何阅读一本书/(美)艾德勒·（美)范多伦著；郝明义，朱衣译.--北京：商务印书馆，2004ISBN $7-10\\time10-0.4094-9$ ",
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "I.如... Ⅱ. $\\textcircled{1}$ 艾... $\\textcircled{2}$ 范... $\\textcircled{3}$ 郝... $\\textcircled{4}$ 朱... Ⅲ.读书方法 N.G792 ",
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "中国版本图书馆（IP数据核字（2004）第005099号",
+        "page_idx": 3
+    },
+    {
+        "type": "table",
+        "img_path": "images/17756a0754182fa779033701f6e412929fd4f193799f3e5a5eb4b4918bcfd619.jpg",
+        "table_caption": [],
+        "table_footnote": [],
+        "table_body": "\n\n<html><body><table><tr><td>ruheyueduyibenshu 如何阅读一本书 莫提默·J.艾德勒 [美】 著 查尔斯·范多伦 郝明义朱衣译 商务印书馆出版</td></tr><tr><td>（北京王府井大街36号邮政编码100710） 商务印书馆发行 北京瑞古冠中印刷厂印刷 ISBN7-100-04094-9/G·653</td></tr><tr><td>2004年1月第1版 开本787×9601/16 2004年1月北京第1次印刷 印张24% 印数5000 册</td></tr></table></body></html>\n\n",
+        "page_idx": 3
+    }
+]

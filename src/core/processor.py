@@ -1,5 +1,5 @@
 from typing import Dict, Optional
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from ..prompts.prompt_library import get_prompt
 from loguru import logger
 
@@ -59,7 +59,7 @@ class PaperProcessor:
         
         try:
             self.request_count += 1
-            response = self.llm.predict(prompt)
+            response = self.llm.invoke(prompt)
             return {
                 'result': response,
                 'prompt_name': prompt_name,

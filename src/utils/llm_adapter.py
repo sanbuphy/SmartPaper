@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import BaseMessage, HumanMessage, AIMessage, SystemMessage
 import zhipuai
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 
 class BaseLLMAdapter(ABC):
     """LLM适配器基类"""
@@ -117,6 +117,7 @@ def create_llm_adapter(config: Dict[str, Any]) -> BaseLLMAdapter:
         BaseLLMAdapter: LLM适配器实例
     """
     provider = config['provider'].lower()
+
     if provider == 'openai':
         return OpenAIAdapter(config['openai'])
     elif provider == 'openai_deepseek':
@@ -129,5 +130,9 @@ def create_llm_adapter(config: Dict[str, Any]) -> BaseLLMAdapter:
         return OpenAIAdapter(config['openai_doubao'])
     elif provider == 'zhipuai':
         return ZhipuChatAdapter(config['zhipuai'])
+    elif provider == 'ai_studio':
+        return OpenAIAdapter(config['ai_studio'])
+    elif provider == "ai_studio_fast_deploy":
+        return OpenAIAdapter(config['ai_studio_fast_deploy'])
     else:
         raise ValueError(f"不支持的LLM提供商: {provider}")
