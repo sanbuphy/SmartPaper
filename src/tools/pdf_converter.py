@@ -36,7 +36,7 @@ class PDFConverter:
             
         return self.converter.convert(str(file_path))
 
-    def convert_url(self, url: str) -> Dict:
+    def convert_url(self, url: str) -> Dict | None:
         """从URL下载并转换PDF文件
         
         Args:

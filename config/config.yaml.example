@@ -1,6 +1,6 @@
 # LLM配置
 llm:
-  provider: "openai_deepseek"  # 可选的提供商包括: openai，openai_deepseek，openai_siliconflow，openai_kimi，openai_doubao，zhipuai
+  provider: "ai_studio_fast_deploy"  # 可选的提供商包括: openai，openai_deepseek，openai_siliconflow，openai_kimi，openai_doubao，zhipuai，ai_studio
   max_requests: 10  # 最大请求次数
   openai:
     api_key: "your-api-key"
@@ -15,9 +15,10 @@ llm:
     temperature: 0.7
     max_tokens: 8192
   openai_siliconflow:
-    api_key: "your-api-key"
+    api_key: "snbvsh"
     base_url: "https://api.siliconflow.com/v1"
-    model: "gpt-4-1106-preview"
+#    model: "Qwen/Qwen2.5-72B-Instruct-128K"
+    model: "Qwen/Qwen2-7B-Instruct"
     temperature: 0.7
     max_tokens: 8192
   openai_kimi:
@@ -37,6 +38,19 @@ llm:
     model: "glm-4"
     temperature: 0.7
     max_tokens: 8192
+  ai_studio:
+    api_key: "6d7"
+    base_url: "https://aistudio.baidu.com/llm/lmapi/v3"
+    model: "deepseek-r1"
+    temperature: 0.7
+    max_tokens: 8192
+  ai_studio_fast_deploy:
+    api_key: "659"
+    base_url: "https://api-f6f9v9xdo8n0j2yd.aistudio-app.com/v1"
+    model: "deepseek-r1:32b"
+    temperature: 0.7
+    max_tokens: 8192
+
 
 # 输出配置
 output:
@@ -60,4 +74,4 @@ prompts:
 agent:
   max_iterations: 5
   timeout: 300  # 秒
-  memory_window: 10 
+  memory_window: 10

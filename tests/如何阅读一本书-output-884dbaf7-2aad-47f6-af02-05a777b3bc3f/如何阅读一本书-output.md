@@ -1,8 +1,8 @@
 # HOWTOREADAI BOOK如何阅读一本书  
 
-![](images/49ed06841be864ffd76f51d3404c5856aeb242f958280afced992bb4d9861cbd.jpg)  
+![图片描述 - 49ed06841be864ffd76f51d3404c5856aeb242f958280afced992bb4d9861cbd.jpg](images/49ed06841be864ffd76f51d3404c5856aeb242f958280afced992bb4d9861cbd.jpg)  
 
-![](images/0e20c5dc6473759d6d13b14370223817b2ea281340eb5becf2efbbab41e87a15.jpg)  
+![图片描述 - 0e20c5dc6473759d6d13b14370223817b2ea281340eb5becf2efbbab41e87a15.jpg](images/0e20c5dc6473759d6d13b14370223817b2ea281340eb5becf2efbbab41e87a15.jpg)  
 
 # 如何阅读一本书  
 

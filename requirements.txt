@@ -17,3 +17,10 @@ arxiv>=2.0.0
 tqdm>=4.66.1
 markitdown
 loguru
+streamlit>=1.42.0
+pymupdf
+langchain_openai
+modelscope
+magic-pdf[full]
+--extra-index-url https://wheels.myhloli.com
+--index-url https://mirrors.aliyun.com/pypi/simple
