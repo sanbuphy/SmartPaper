@@ -2,7 +2,7 @@
 import os  # 用于文件和目录操作
 import re  # 用于正则表达式处理
 from pathlib import Path  # 用于跨平台的路径操作
-
+from src.utils.vlm_function import describe_image
 def read_markdown_files(path):
     """
     读取指定路径下的所有Markdown文件
@@ -58,7 +58,13 @@ def process_markdown_image(file_path, force_add_desc=False):
                 # 构建图片的完整路径
                 full_path = os.path.normpath(os.path.join(markdown_dir, img_path))
                 if os.path.exists(full_path):
-                    new_desc = vlm_description(full_path)
+                    
+                    # 使用正则表达式去除描述中的特殊字符
+                    # 该正则表达式匹配以下特殊字符: [ ] | \n < > { } ( ) \ # * `
+                    # 这些字符在Markdown中有特殊含义，可能会导致解析问题
+                    # describe_image(full_path) 函数生成图片描述
+                    # re.sub 函数将匹配到的特殊字符替换为空字符串，从而去除它们
+                    new_desc = re.sub(r'[\[\]\|\n\<\>\{\}\(\)\\\#\*`]', '', describe_image(full_path))                    
                     modified = True
                     return f'![{new_desc}]({img_path})'
             return match.group(0)
@@ -78,20 +84,9 @@ def process_markdown_image(file_path, force_add_desc=False):
     except Exception as e:
         print(f"处理文件 {file_path} 时出错: {str(e)}")
 
-def vlm_description(image_path):
-    """
-    使用视觉语言模型生成图片描述
-    
-    参数:
-        image_path: str, 图片文件的路径
-        
-    返回:
-        str: 生成的图片描述
-    """
-    # TODO: 替换为实际的模型调用
-    return f"图片描述 - {os.path.basename(image_path)}"
 
-def add_image_description(path):
+
+def add_image_description(path,force_add_desc=True):
     """
     主处理流程
     
@@ -103,5 +98,5 @@ def add_image_description(path):
     """
     for md_file in read_markdown_files(path):
         print(f"正在处理: {md_file}")
-        process_markdown_image(md_file, force_add_desc=True)
+        process_markdown_image(md_file, force_add_desc=force_add_desc)
 

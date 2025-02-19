@@ -6,8 +6,6 @@
 否则：报错没有找到magic pdf.json文件
 """
 
-
-
 import os
 import uuid
 from magic_pdf.data.data_reader_writer import FileBasedDataWriter, FileBasedDataReader
