@@ -4,6 +4,7 @@ import yaml
 import logging
 import os
 
+
 class PromptLibrary:
     def __init__(self, prompt_file: str = None):
         """初始化提示词库
@@ -17,7 +18,7 @@ class PromptLibrary:
             self.prompt_file = os.path.join(root_dir, "config", "prompts.yaml")
         else:
             self.prompt_file = prompt_file
-            
+
         self.prompts = self._load_prompts()
         logging.info(f"成功加载了 {len(self.prompts)} 个提示词模板")
 
@@ -28,9 +29,9 @@ class PromptLibrary:
             Dict: 提示词配置
         """
         try:
-            with open(self.prompt_file, 'r', encoding='utf-8') as f:
+            with open(self.prompt_file, "r", encoding="utf-8") as f:
                 config = yaml.safe_load(f)
-                return config['prompts']
+                return config["prompts"]
         except Exception as e:
             raise Exception(f"加载提示词配置失败: {str(e)}")
 
@@ -45,7 +46,7 @@ class PromptLibrary:
         """
         if prompt_name not in self.prompts:
             raise ValueError(f"未找到名为 '{prompt_name}' 的提示词模板")
-        return self.prompts[prompt_name]['template']
+        return self.prompts[prompt_name]["template"]
 
     def list_prompts(self) -> Dict[str, str]:
         """列出所有可用的提示词模板
@@ -53,15 +54,16 @@ class PromptLibrary:
         Returns:
             Dict[str, str]: 提示词名称和描述的字典
         """
-        return {name: info['description'] 
-                for name, info in self.prompts.items()}
+        return {name: info["description"] for name, info in self.prompts.items()}
 
     def reload(self):
         """重新加载提示词配置"""
         self.prompts = self._load_prompts()
 
+
 # 创建全局实例
 _prompt_library = PromptLibrary()
+
 
 # 导出便捷函数
 def get_prompt(prompt_name: str) -> str:
@@ -75,6 +77,7 @@ def get_prompt(prompt_name: str) -> str:
     """
     return _prompt_library.get_prompt(prompt_name)
 
+
 def list_prompts() -> Dict[str, str]:
     """列出所有可用的提示词模板
 
@@ -83,6 +86,7 @@ def list_prompts() -> Dict[str, str]:
     """
     return _prompt_library.list_prompts()
 
+
 def reload_prompts():
     """重新加载提示词配置"""
-    _prompt_library.reload() 
+    _prompt_library.reload()

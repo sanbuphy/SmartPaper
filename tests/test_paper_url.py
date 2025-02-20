@@ -1,3 +1,11 @@
+"""
+此测试文件用于测试通过URL链接分析学术论文的功能。它支持两种分析模式：提示词模式（prompt）和智能代理模式（agent）。提示词模式使用预定义的提示模板进行分析，而智能代理模式则提供更灵活的结构化分析。分析结果会以markdown格式输出。
+
+示例用法：
+    python test_paper_url.py prompt https://arxiv.org/pdf/2312.12456.pdf coolpapers  # 使用特定提示词分析论文
+    python test_paper_url.py agent https://arxiv.org/pdf/2312.12456.pdf  # 使用智能代理模式分析论文
+"""
+
 import os
 import sys
 import yaml
@@ -10,10 +18,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.core.reader import SmartPaper
 from src.prompts.prompt_library import list_prompts
 
+
 def load_config(config_path: str = "config/config.yaml") -> Dict:
     """加载配置文件"""
-    with open(config_path, 'r', encoding='utf-8') as f:
+    with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
 
 def test_url_prompt(paper_url: str, prompt_name: str = None):
     """测试URL论文的提示词模式
@@ -23,18 +33,19 @@ def test_url_prompt(paper_url: str, prompt_name: str = None):
         prompt_name (str, optional): 提示词名称
     """
     config = load_config()
-    reader = SmartPaper(output_format='markdown')
-    
+    reader = SmartPaper(output_format="markdown")
+
     print(f"\n{'='*50}")
     print(f"测试URL论文提示词模式: {prompt_name or '默认提示词'}")
     print(f"论文URL: {paper_url}")
     print(f"{'='*50}\n")
-    
-    result = reader.process_paper_url(paper_url, mode='prompt', prompt_name=prompt_name)
+
+    result = reader.process_paper_url(paper_url, mode="prompt", prompt_name=prompt_name)
     print("分析结果:")
     print("-" * 50)
-    print(result['result'])
+    print(result["result"])
     print("\n")
+
 
 def test_url_agent(paper_url: str):
     """测试URL论文的Agent模式
@@ -43,24 +54,25 @@ def test_url_agent(paper_url: str):
         paper_url (str): 论文URL
     """
     config = load_config()
-    reader = SmartPaper(output_format='markdown')
-    
+    reader = SmartPaper(output_format="markdown")
+
     print(f"\n{'='*50}")
     print(f"测试URL论文Agent模式")
     print(f"论文URL: {paper_url}")
     print(f"{'='*50}\n")
-    
-    result = reader.process_paper_url(paper_url, mode='agent')
-    
+
+    result = reader.process_paper_url(paper_url, mode="agent")
+
     print("结构化分析结果:")
     print("-" * 50)
-    if 'structured_analysis' in result:
-        for section, content in result['structured_analysis'].items():
+    if "structured_analysis" in result:
+        for section, content in result["structured_analysis"].items():
             print(f"\n## {section.capitalize()}")
             print(content)
     else:
-        print(result['result'])
+        print(result["result"])
     print("\n")
+
 
 def main():
     """主测试函数"""
@@ -77,13 +89,14 @@ def main():
     mode = sys.argv[1]
     paper_url = sys.argv[2]
 
-    if mode == 'prompt':
+    if mode == "prompt":
         prompt_name = sys.argv[3] if len(sys.argv) > 3 else None
         test_url_prompt(paper_url, prompt_name)
-    elif mode == 'agent':
+    elif mode == "agent":
         test_url_agent(paper_url)
     else:
         print(f"错误: 未知的测试模式 - {mode}")
 
+
 if __name__ == "__main__":
-    main() 
+    main()

@@ -3,6 +3,7 @@ from langchain.schema import HumanMessage, AIMessage, SystemMessage
 import json
 from ..utils.llm_adapter import create_llm_adapter
 
+
 class PaperAgent:
     def __init__(self, config: dict):
         """初始化论文分析Agent
@@ -11,10 +12,10 @@ class PaperAgent:
             config (dict): 配置信息
         """
         self.config = config
-        self.llm = create_llm_adapter(config['llm'])
+        self.llm = create_llm_adapter(config["llm"])
         self.memory = []
-        self.max_iterations = config['agent']['max_iterations']
-        self.memory_window = config['agent']['memory_window']
+        self.max_iterations = config["agent"]["max_iterations"]
+        self.memory_window = config["agent"]["memory_window"]
 
     def analyze(self, text_content: str) -> Dict:
         """智能分析论文内容
@@ -36,16 +37,16 @@ class PaperAgent:
 请以结构化的方式组织你的分析，确保内容清晰且易于理解。"""
 
         self.memory = [SystemMessage(content=system_prompt)]
-        
+
         # 添加论文内容到对话
         self.memory.append(HumanMessage(content=f"请分析以下论文内容：\n\n{text_content}"))
-        
+
         # 开始多轮分析
         analysis_result = {}
         for _ in range(self.max_iterations):
-            response = self.llm(self.memory[-self.memory_window:])
+            response = self.llm(self.memory[-self.memory_window :])
             self.memory.append(AIMessage(content=response.content))
-            
+
             # 尝试解析结构化结果
             try:
                 if self._is_analysis_complete(response.content):
@@ -53,14 +54,14 @@ class PaperAgent:
                     break
             except:
                 continue
-            
+
             # 添加后续提问
             follow_up = self._generate_follow_up_question(response.content)
             if not follow_up:
                 break
-            
+
             self.memory.append(HumanMessage(content=follow_up))
-        
+
         return analysis_result or {"result": self.memory[-2].content}
 
     def _is_analysis_complete(self, content: str) -> bool:
@@ -72,9 +73,7 @@ class PaperAgent:
         Returns:
             bool: 是否完成分析
         """
-        required_sections = [
-            "贡献", "方法", "结果", "应用", "局限"
-        ]
+        required_sections = ["贡献", "方法", "结果", "应用", "局限"]
         return all(section.lower() in content.lower() for section in required_sections)
 
     def _parse_final_result(self, content: str) -> Dict:
@@ -93,8 +92,8 @@ class PaperAgent:
                 "methodology": self._extract_section(content, "方法"),
                 "results": self._extract_section(content, "结果"),
                 "applications": self._extract_section(content, "应用"),
-                "limitations": self._extract_section(content, "局限")
-            }
+                "limitations": self._extract_section(content, "局限"),
+            },
         }
 
     def _generate_follow_up_question(self, content: str) -> str:
@@ -113,18 +112,18 @@ class PaperAgent:
                 "方法": "研究方法论",
                 "结果": "实验结果",
                 "应用": "潜在的应用场景",
-                "局限": "局限性和未来工作"
+                "局限": "局限性和未来工作",
             }
-            
+
             for key, description in sections.items():
                 if key.lower() not in content.lower():
                     missing_sections.append(description)
-            
+
             if missing_sections:
                 return f"请补充分析以下方面的内容：\n" + "\n".join(
                     f"- {section}" for section in missing_sections
                 )
-        
+
         return ""
 
     def _extract_section(self, content: str, section_name: str) -> str:
@@ -142,17 +141,17 @@ class PaperAgent:
             start_idx = content.lower().find(section_name.lower())
             if start_idx == -1:
                 return ""
-            
+
             # 找到下一个部分的开始
-            next_section_idx = float('inf')
+            next_section_idx = float("inf")
             for section in ["贡献", "方法", "结果", "应用", "局限"]:
                 if section.lower() == section_name.lower():
                     continue
                 idx = content.lower().find(section.lower(), start_idx + 1)
                 if idx != -1:
                     next_section_idx = min(next_section_idx, idx)
-            
-            if next_section_idx == float('inf'):
+
+            if next_section_idx == float("inf"):
                 return content[start_idx:].strip()
             return content[start_idx:next_section_idx].strip()
         except:
@@ -164,4 +163,4 @@ class PaperAgent:
         Args:
             api_key (str): 新的API密钥
         """
-        self.llm.update_api_key(api_key) 
+        self.llm.update_api_key(api_key)
