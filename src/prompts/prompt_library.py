@@ -6,7 +6,7 @@ import os
 
 
 class PromptLibrary:
-    def __init__(self, prompt_file: str = None):
+    def __init__(self, prompt_file: str | None = None):
         """初始化提示词库
 
         Args:
