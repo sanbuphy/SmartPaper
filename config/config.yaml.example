@@ -26,6 +26,12 @@ llm:
     model: "moonshot-v1-8k"
     temperature: 0.7
     max_tokens: 8192
+  openai_aistudio:
+    api_key: "your-api-key"
+    base_url: "https://api.baidu.com/v1"
+    model: "model_name"
+    temperature: 0.7
+    max_tokens: 4096
   openai_doubao:
     api_key: "your-api-key"
     base_url: "https://ark.cn-beijing.volces.com/api/v3"
