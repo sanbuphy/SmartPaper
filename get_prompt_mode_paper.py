@@ -41,6 +41,43 @@ def process_paper(url: str, prompt_name: str = 'yuanbao'):
         logger.error(f"处理失败: {str(e)}")
         yield {"type": "final", "success": False, "error": str(e)}
 
+def reanalyze_paper(url: str, prompt_name: str):
+    """重新分析指定URL的论文"""
+    # 添加用户请求消息到聊天历史
+    st.session_state.messages.append({
+        "role": "user",
+        "content": f"请重新分析论文: {url} 使用提示词模板: {prompt_name}"
+    })
+    # 处理论文
+    with st.spinner("正在重新分析论文..."):
+        full_output = ""
+        for result in process_paper(url, prompt_name):
+            if result["type"] == "chunk":
+                full_output += result["content"]
+            elif result["type"] == "final":
+                if result["success"]:
+                    response = full_output
+                    file_path = result["file_path"]
+                    file_name = os.path.basename(file_path)
+                    new_message = {
+                        "role": "论文分析助手",
+                        "content": response,
+                        "file_name": file_name,
+                        "file_path": file_path,
+                        "url": url  # 保留URL以支持多次重新分析
+                    }
+                else:
+                    response = result["error"]
+                    new_message = {
+                        "role": "论文分析助手",
+                        "content": response,
+                        "url": url  # 即使失败也保留URL
+                    }
+                st.session_state.messages.append(new_message)
+                break
+    # 刷新页面以更新聊天历史
+    st.rerun()
+
 def main():
     """主函数"""
     # 设置页面标题
@@ -80,89 +117,118 @@ def main():
         with col2:
             clear_button = st.button("清空分析结果")
 
+    # 清空聊天历史和已处理论文记录
     if clear_button:
         st.session_state.messages = []
+        st.session_state.processed_papers = {}
 
     # 显示聊天历史
     st.write("### 分析结果")
     chat_container = st.container()
 
     with chat_container:
-        for message in st.session_state.messages:
+        for i, message in enumerate(st.session_state.messages):
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
                 # 为已处理的论文显示下载按钮
-                if message["role"] == "论文分析助手" and "file_name" in message:
+                if "file_name" in message:
                     st.download_button(
                         label=f"下载 {message['file_name']}",
                         data=message["content"],
                         file_name=message["file_name"],
                         mime="text/markdown",
-                        key=f"download_{message['file_name']}"
+                        key=f"download_{message['file_name']}_{i}"  # 使用索引确保唯一性
                     )
+                # 添加重新分析功能
+                if "url" in message:
+                    with st.expander("重新分析"):
+                        prompt_options = list_prompts()
+                        selected_prompt_reanalyze = st.selectbox(
+                            "选择提示词模板",
+                            options=list(prompt_options.keys()),
+                            format_func=lambda x: f"{x}: {prompt_options[x]}",
+                            key=f"reanalyze_prompt_{i}"  # 唯一键
+                        )
+                        if st.button("重新分析", key=f"reanalyze_button_{i}"):  # 唯一键
+                            reanalyze_paper(message["url"], selected_prompt_reanalyze)
 
     # 处理新论文并流式输出
     if process_button:
-        # 添加用户消息到聊天历史
-        st.session_state.messages.append({
-            "role": "user",
-            "content": f"请分析论文: {paper_url}"
-        })
+        if paper_url in st.session_state.processed_papers:
+            st.warning("该论文已经分析过，如果不满意，可以点击对应分析结果的“重新分析”按钮。")
+        else:
+            # 添加用户消息到聊天历史
+            st.session_state.messages.append({
+                "role": "user",
+                "content": f"请分析论文: {paper_url}"
+            })
+            # 显示当前聊天历史
+            with chat_container:
+                for i, message in enumerate(st.session_state.messages):
+                    with st.chat_message(message["role"]):
+                        st.markdown(message["content"])
+                        if "file_name" in message:
+                            st.download_button(
+                                label=f"下载 {message['file_name']}",
+                                data=message["content"],
+                                file_name=message["file_name"],
+                                mime="text/markdown",
+                                key=f"download_{message['file_name']}_{i}"
+                            )
+                        if "url" in message:
+                            with st.expander("重新分析"):
+                                prompt_options = list_prompts()
+                                selected_prompt_reanalyze = st.selectbox(
+                                    "选择提示词模板",
+                                    options=list(prompt_options.keys()),
+                                    format_func=lambda x: f"{x}: {prompt_options[x]}",
+                                    key=f"reanalyze_prompt_{i}"
+                                )
+                                if st.button("重新分析", key=f"reanalyze_button_{i}"):
+                                    reanalyze_paper(message["url"], selected_prompt_reanalyze)
 
-        # 显示当前聊天历史
-        with chat_container:
-            for message in st.session_state.messages:
-                with st.chat_message(message["role"]):
-                    st.markdown(message["content"])
-                    if "file_name" in message:
-                        st.download_button(
-                            label=f"下载 {message['file_name']}",
-                            data=message["content"],
-                            file_name=message["file_name"],
-                            mime="text/markdown",
-                            key=f"download_{message['file_name']}"
-                        )
+            # 创建当前分析进展区域
+            st.write("### 当前分析进展")
+            progress_placeholder = st.empty()
 
-        # 创建当前分析进展区域
-        st.write("### 当前分析进展")
-        progress_placeholder = st.empty()
+            with st.spinner("正在处理论文..."):
+                full_output = ""
+                for result in process_paper(paper_url, selected_prompt):
+                    if result["type"] == "chunk":
+                        full_output += result["content"]
+                        progress_placeholder.markdown(full_output)
+                    elif result["type"] == "final":
+                        if result["success"]:
+                            response = full_output
+                            file_path = result["file_path"]
+                            file_name = os.path.basename(file_path)
+                            st.session_state.processed_papers[paper_url] = {
+                                "content": response,
+                                "file_path": file_path,
+                                "file_name": file_name
+                            }
+                            message = {
+                                "role": "论文分析助手",
+                                "content": response,
+                                "file_name": file_name,
+                                "file_path": file_path,
+                                "url": paper_url  # 添加URL以支持重新分析
+                            }
+                        else:
+                            response = result["error"]
+                            message = {
+                                "role": "论文分析助手",
+                                "content": response,
+                                "url": paper_url  # 添加URL以支持重新分析
+                            }
+                        st.session_state.messages.append(message)
+                        break
 
-        with st.spinner("正在处理论文..."):
-            full_output = ""
-            for result in process_paper(paper_url, selected_prompt):
-                if result["type"] == "chunk":
-                    full_output += result["content"]
-                    progress_placeholder.markdown(full_output)
-                elif result["type"] == "final":
-                    if result["success"]:
-                        response = full_output
-                        file_path = result["file_path"]
-                        file_name = os.path.basename(file_path)
-                        st.session_state.processed_papers[paper_url] = {
-                            "content": response,
-                            "file_path": file_path,
-                            "file_name": file_name
-                        }
-                        message = {
-                            "role": "论文分析助手",
-                            "content": response,
-                            "file_name": file_name,
-                            "file_path": file_path
-                        }
-                    else:
-                        response = result["error"]
-                        message = {
-                            "role": "论文分析助手",
-                            "content": response
-                        }
-                    st.session_state.messages.append(message)
-                    break
+            # 清除进展显示
+            progress_placeholder.empty()
 
-        # 清除进展显示
-        progress_placeholder.empty()
-
-        # 刷新页面以更新聊天历史
-        st.rerun()
+            # 刷新页面以更新聊天历史
+            st.rerun()
 
 if __name__ == '__main__':
     # 配置Streamlit页面
