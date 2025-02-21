@@ -1,6 +1,6 @@
 import sys
 import os
-from  src.tools.MinerU_convert import process_pdf
+from  src.tools.mineru_convert import process_pdf
 # 添加项目根目录到Python路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
