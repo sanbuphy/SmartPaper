@@ -9,9 +9,11 @@ from ..tools.markdown_converter import MarkdownConverter
 from ..utils.output_formatter import OutputFormatter
 from loguru import logger
 
+
 class SmartPaper:
     """论文阅读和存档工具"""
-    def __init__(self, config_file: str = None, output_format: str = 'markdown'):
+
+    def __init__(self, config_file: str = None, output_format: str = "markdown"):
         """初始化SmartPaper实例
 
         Args:
@@ -20,8 +22,9 @@ class SmartPaper:
         """
         # 加载配置
         if config_file is None:
-            config_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-                                     'config', 'config.yaml')
+            config_file = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config", "config.yaml"
+            )
 
         if not os.path.exists(config_file):
             raise FileNotFoundError(f"配置文件不存在: {config_file}")
@@ -33,7 +36,7 @@ class SmartPaper:
         self.converter: MarkdownConverter = MarkdownConverter(config=self.config)
         self.processor: PaperProcessor = PaperProcessor(self.config)
         self.agent: PaperAgent = PaperAgent(self.config)
-        self.output_formatter: OutputFormatter = OutputFormatter(self.config['output'])
+        self.output_formatter: OutputFormatter = OutputFormatter(self.config["output"])
         logger.info("初始化组件完成")
 
         # 设置输出格式
@@ -49,12 +52,12 @@ class SmartPaper:
             Dict: 配置信息
         """
         try:
-            with open(config_file, 'r', encoding='utf-8') as f:
+            with open(config_file, "r", encoding="utf-8") as f:
                 return yaml.safe_load(f)
         except Exception as e:
             raise Exception(f"加载配置文件失败: {str(e)}")
 
-    def process_paper(self, file_path: str, mode: str = 'prompt', prompt_name: str = None) -> Dict:
+    def process_paper(self, file_path: str, mode: str = "prompt", prompt_name: str = None) -> Dict:
         """处理单个论文文件
 
         Args:
@@ -71,16 +74,14 @@ class SmartPaper:
             logger.info(f"转换PDF成功: {file_path}")
 
             # 根据模式处理
-            if mode == 'prompt':
-                analysis = self.processor.process(result['text_content'], prompt_name)
+            if mode == "prompt":
+                analysis = self.processor.process(result["text_content"], prompt_name)
             else:
-                analysis = self.agent.analyze(result['text_content'])
+                analysis = self.agent.analyze(result["text_content"])
 
             # 格式化输出
             output = self.output_formatter.format(
-                content=analysis,
-                metadata=result['metadata'],
-                format=self.output_format
+                content=analysis, metadata=result["metadata"], format=self.output_format
             )
 
             return output
@@ -88,7 +89,9 @@ class SmartPaper:
         except Exception as e:
             raise Exception(f"处理论文失败: {str(e)}")
 
-    def process_directory(self, dir_path: str, mode: str = 'prompt', prompt_name: str = None) -> List[Dict]:
+    def process_directory(
+        self, dir_path: str, mode: str = "prompt", prompt_name: str = None
+    ) -> List[Dict]:
         """处理目录中的所有论文
 
         Args:
@@ -105,7 +108,7 @@ class SmartPaper:
         if not dir_path.exists():
             raise FileNotFoundError(f"目录不存在: {dir_path}")
 
-        for file_path in dir_path.glob('*.pdf'):
+        for file_path in dir_path.glob("*.pdf"):
             try:
                 result = self.process_paper(str(file_path), mode, prompt_name)
                 results.append(result)
@@ -114,7 +117,9 @@ class SmartPaper:
 
         return results
 
-    def process_paper_url(self, url: str, mode: str = 'prompt', prompt_name: str = None, description: str = None) -> Dict:
+    def process_paper_url(
+        self, url: str, mode: str = "prompt", prompt_name: str = None, description: str = None
+    ) -> Dict:
         """处理论文URL
 
         Args:
@@ -133,17 +138,15 @@ class SmartPaper:
             logger.info("PDF转换完成，开始分析")
 
             # 根据模式处理
-            if mode == 'prompt':
-                analysis = self.processor.process(result['text_content'], prompt_name)
+            if mode == "prompt":
+                analysis = self.processor.process(result["text_content"], prompt_name)
             else:
-                analysis = self.agent.analyze(result['text_content'])
+                analysis = self.agent.analyze(result["text_content"])
             logger.info(f"分析完成，使用模式: {mode}")
-            content = analysis.get("result")
+
             # 格式化输出
             output = self.output_formatter.format(
-                content=content,
-                metadata=result['metadata'],
-                format=self.output_format
+                content=analysis, metadata=result["metadata"], format=self.output_format
             )
 
             return output
@@ -163,5 +166,5 @@ class SmartPaper:
     def reset_request_count(self):
         """重置所有组件的请求计数器"""
         self.processor.reset_request_count()
-        if hasattr(self.agent, 'reset_request_count'):
-            self.agent.reset_request_count() 
+        if hasattr(self.agent, "reset_request_count"):
+            self.agent.reset_request_count()

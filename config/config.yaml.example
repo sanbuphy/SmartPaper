@@ -1,6 +1,6 @@
 # LLM配置
 llm:
-  provider: "ai_studio_fast_deploy"  # 可选的提供商包括: openai，openai_deepseek，openai_siliconflow，openai_kimi，openai_doubao，zhipuai，ai_studio
+  provider: "openai_deepseek"  # 可选的提供商包括: openai，openai_deepseek，openai_siliconflow，openai_kimi，openai_doubao，zhipuai
   max_requests: 10  # 最大请求次数
   openai:
     api_key: "your-api-key"
@@ -15,10 +15,9 @@ llm:
     temperature: 0.7
     max_tokens: 8192
   openai_siliconflow:
-    api_key: "snbvsh"
+    api_key: "your-api-key"
     base_url: "https://api.siliconflow.com/v1"
-#    model: "Qwen/Qwen2.5-72B-Instruct-128K"
-    model: "Qwen/Qwen2-7B-Instruct"
+    model: "gpt-4-1106-preview"
     temperature: 0.7
     max_tokens: 8192
   openai_kimi:
@@ -27,6 +26,12 @@ llm:
     model: "moonshot-v1-8k"
     temperature: 0.7
     max_tokens: 8192
+  openai_aistudio:
+    api_key: "your-api-key"
+    base_url: "https://api.baidu.com/v1"
+    model: "model_name"
+    temperature: 0.7
+    max_tokens: 4096
   openai_doubao:
     api_key: "your-api-key"
     base_url: "https://ark.cn-beijing.volces.com/api/v3"
@@ -50,8 +55,6 @@ llm:
     model: "deepseek-r1:32b"
     temperature: 0.7
     max_tokens: 8192
-
-
 # 输出配置
 output:
   default_format: "markdown"  # 可选: markdown, csv, folder

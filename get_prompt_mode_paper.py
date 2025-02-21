@@ -6,21 +6,25 @@ from src.core.processor import PaperProcessor
 from src.prompts.prompt_library import list_prompts
 from typing import List, Dict
 
+
 def load_config():
     """加载配置文件"""
-    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'config.yaml')
-    with open(config_path, 'r', encoding='utf-8') as f:
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config", "config.yaml")
+    with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
-def process_paper(url: str, prompt_name: str = 'yuanbao'):
+
+def process_paper(url: str, prompt_name: str = "yuanbao"):
     """处理论文并以流式方式yield结果"""
     try:
         logger.info(f"使用提示词模板: {prompt_name}")
 
         # 创建输出目录及输出文件
-        output_dir = 'outputs'
+        output_dir = "outputs"
         os.makedirs(output_dir, exist_ok=True)
-        output_file = os.path.join(output_dir, f'analysis_{url.split("/")[-1]}_prompt_{prompt_name}.md')
+        output_file = os.path.join(
+            output_dir, f'analysis_{url.split("/")[-1]}_prompt_{prompt_name}.md'
+        )
 
         # 加载配置
         config = load_config()
@@ -29,7 +33,7 @@ def process_paper(url: str, prompt_name: str = 'yuanbao'):
         processor = PaperProcessor(config)
 
         # 以写入模式打开文件，覆盖旧内容
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             for chunk in processor.process_stream(url, prompt_name=prompt_name):
                 f.write(chunk)
                 yield {"type": "chunk", "content": chunk}
@@ -41,13 +45,13 @@ def process_paper(url: str, prompt_name: str = 'yuanbao'):
         logger.error(f"处理失败: {str(e)}")
         yield {"type": "final", "success": False, "error": str(e)}
 
+
 def reanalyze_paper(url: str, prompt_name: str):
     """重新分析指定URL的论文"""
     # 添加用户请求消息到聊天历史
-    st.session_state.messages.append({
-        "role": "user",
-        "content": f"请重新分析论文: {url} 使用提示词模板: {prompt_name}"
-    })
+    st.session_state.messages.append(
+        {"role": "user", "content": f"请重新分析论文: {url} 使用提示词模板: {prompt_name}"}
+    )
     # 处理论文
     with st.spinner("正在重新分析论文..."):
         full_output = ""
@@ -64,19 +68,20 @@ def reanalyze_paper(url: str, prompt_name: str):
                         "content": response,
                         "file_name": file_name,
                         "file_path": file_path,
-                        "url": url  # 保留URL以支持多次重新分析
+                        "url": url,  # 保留URL以支持多次重新分析
                     }
                 else:
                     response = result["error"]
                     new_message = {
                         "role": "论文分析助手",
                         "content": response,
-                        "url": url  # 即使失败也保留URL
+                        "url": url,  # 即使失败也保留URL
                     }
                 st.session_state.messages.append(new_message)
                 break
     # 刷新页面以更新聊天历史
     st.rerun()
+
 
 def main():
     """主函数"""
@@ -99,16 +104,12 @@ def main():
             "选择提示词模板",
             options=list(prompt_options.keys()),
             format_func=lambda x: f"{x}: {prompt_options[x]}",
-            help="选择用于分析的提示词模板"
+            help="选择用于分析的提示词模板",
         )
 
         # 输入论文URL
-        default_url = 'https://arxiv.org/pdf/2305.12002'
-        paper_url = st.text_input(
-            "论文URL",
-            value=default_url,
-            help="输入要分析的论文URL"
-        )
+        default_url = "https://arxiv.org/pdf/2305.12002"
+        paper_url = st.text_input("论文URL", value=default_url, help="输入要分析的论文URL")
 
         # 创建两列布局来放置按钮
         col1, col2 = st.columns(2)
@@ -137,7 +138,7 @@ def main():
                         data=message["content"],
                         file_name=message["file_name"],
                         mime="text/markdown",
-                        key=f"download_{message['file_name']}_{i}"  # 使用索引确保唯一性
+                        key=f"download_{message['file_name']}_{i}",  # 使用索引确保唯一性
                     )
                 # 添加重新分析功能
                 if "url" in message:
@@ -147,7 +148,7 @@ def main():
                             "选择提示词模板",
                             options=list(prompt_options.keys()),
                             format_func=lambda x: f"{x}: {prompt_options[x]}",
-                            key=f"reanalyze_prompt_{i}"  # 唯一键
+                            key=f"reanalyze_prompt_{i}",  # 唯一键
                         )
                         if st.button("重新分析", key=f"reanalyze_button_{i}"):  # 唯一键
                             reanalyze_paper(message["url"], selected_prompt_reanalyze)
@@ -158,10 +159,9 @@ def main():
             st.warning("该论文已经分析过，如果不满意，可以点击对应分析结果的“重新分析”按钮。")
         else:
             # 添加用户消息到聊天历史
-            st.session_state.messages.append({
-                "role": "user",
-                "content": f"请分析论文: {paper_url}"
-            })
+            st.session_state.messages.append(
+                {"role": "user", "content": f"请分析论文: {paper_url}"}
+            )
             # 显示当前聊天历史
             with chat_container:
                 for i, message in enumerate(st.session_state.messages):
@@ -173,7 +173,7 @@ def main():
                                 data=message["content"],
                                 file_name=message["file_name"],
                                 mime="text/markdown",
-                                key=f"download_{message['file_name']}_{i}"
+                                key=f"download_{message['file_name']}_{i}",
                             )
                         if "url" in message:
                             with st.expander("重新分析"):
@@ -182,7 +182,7 @@ def main():
                                     "选择提示词模板",
                                     options=list(prompt_options.keys()),
                                     format_func=lambda x: f"{x}: {prompt_options[x]}",
-                                    key=f"reanalyze_prompt_{i}"
+                                    key=f"reanalyze_prompt_{i}",
                                 )
                                 if st.button("重新分析", key=f"reanalyze_button_{i}"):
                                     reanalyze_paper(message["url"], selected_prompt_reanalyze)
@@ -205,21 +205,21 @@ def main():
                             st.session_state.processed_papers[paper_url] = {
                                 "content": response,
                                 "file_path": file_path,
-                                "file_name": file_name
+                                "file_name": file_name,
                             }
                             message = {
                                 "role": "论文分析助手",
                                 "content": response,
                                 "file_name": file_name,
                                 "file_path": file_path,
-                                "url": paper_url  # 添加URL以支持重新分析
+                                "url": paper_url,  # 添加URL以支持重新分析
                             }
                         else:
                             response = result["error"]
                             message = {
                                 "role": "论文分析助手",
                                 "content": response,
-                                "url": paper_url  # 添加URL以支持重新分析
+                                "url": paper_url,  # 添加URL以支持重新分析
                             }
                         st.session_state.messages.append(message)
                         break
@@ -230,11 +230,8 @@ def main():
             # 刷新页面以更新聊天历史
             st.rerun()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # 配置Streamlit页面
-    st.set_page_config(
-        page_title="论文分析工具",
-        page_icon="📄",
-        layout="wide"
-    )
+    st.set_page_config(page_title="论文分析工具", page_icon="📄", layout="wide")
     main()

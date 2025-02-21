@@ -133,3 +133,46 @@ python main.py -p yuanbao
 ## 贡献指南
 
 欢迎提交 Issue 和 Pull Request!
+
+### 代码规范
+
+本项目使用 pre-commit 来确保代码质量和一致性。请注意，每次执行 git commit 时，pre-commit 都会自动检查本次增量提交的修改文件，以确保新代码符合相关格式和风格要求。在开始贡献之前，请按照以下步骤进行设置：
+
+1. 安装 pre-commit：
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+2. 首次运行（检查所有文件）：
+```bash
+pre-commit run --all-files
+```
+
+3. 常见使用场景：
+
+- 提交前自动检查：
+  每次使用 git commit 时，pre-commit 会自动检测本次增量修改的文件。如果存在格式或风格问题，会自动修复并提示你重新 stage 修改后的文件。
+
+- 手动检查特定文件：
+```bash
+pre-commit run --files path/to/file1.py path/to/file2.md
+```
+
+- 跳过特定检查：
+```bash
+SKIP=flake8 git commit -m "your commit message"
+```
+
+4. 配置说明：
+
+- Python 代码格式化：
+  - black：代码格式化（行长度限制为 100）
+  - flake8：代码风格检查
+
+- Markdown 文件格式化：
+  - markdownlint：保持 markdown 文件风格一致
+
+如果你需要修改格式化规则，可以编辑：
+- `.pre-commit-config.yaml`：pre-commit 主配置
+- `.markdownlint.yaml`：markdown 格式化规则

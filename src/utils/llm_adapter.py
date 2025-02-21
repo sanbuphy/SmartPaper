@@ -3,11 +3,12 @@ from abc import ABC, abstractmethod
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import BaseMessage, HumanMessage, AIMessage, SystemMessage
 import zhipuai
-from langchain_openai import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
+
 
 class BaseLLMAdapter(ABC):
     """LLM适配器基类"""
-    
+
     @abstractmethod
     def __call__(self, messages: List[BaseMessage]) -> AIMessage:
         """调用LLM处理消息
@@ -41,9 +42,10 @@ class BaseLLMAdapter(ABC):
         """
         pass
 
+
 class OpenAIAdapter(BaseLLMAdapter):
     """OpenAI适配器"""
-    
+
     def __init__(self, config: Dict[str, Any]):
         """初始化OpenAI适配器
 
@@ -52,20 +54,20 @@ class OpenAIAdapter(BaseLLMAdapter):
         """
         self.config = config
         self.client = ChatOpenAI(
-            api_key=config['api_key'],
-            base_url=config.get('base_url'),  # 可选的自定义API端点
-            model=config['model'],
-            temperature=config['temperature'],
-            max_tokens=config['max_tokens'],
-            streaming=False
+            api_key=config["api_key"],
+            base_url=config.get("base_url"),  # 可选的自定义API端点
+            model=config["model"],
+            temperature=config["temperature"],
+            max_tokens=config["max_tokens"],
+            streaming=False,
         )
         self.stream_client = ChatOpenAI(
-            api_key=config['api_key'],
-            base_url=config.get('base_url'),
-            model=config['model'],
-            temperature=config['temperature'],
-            max_tokens=config['max_tokens'],
-            streaming=True
+            api_key=config["api_key"],
+            base_url=config.get("base_url"),
+            model=config["model"],
+            temperature=config["temperature"],
+            max_tokens=config["max_tokens"],
+            streaming=True,
         )
 
     def __call__(self, messages: List[BaseMessage]) -> AIMessage:
@@ -80,27 +82,28 @@ class OpenAIAdapter(BaseLLMAdapter):
 
     def update_api_key(self, api_key: str):
         """更新API密钥"""
-        self.config['api_key'] = api_key
+        self.config["api_key"] = api_key
         self.client = ChatOpenAI(
             api_key=api_key,
-            base_url=self.config.get('base_url'),
-            model=self.config['model'],
-            temperature=self.config['temperature'],
-            max_tokens=self.config['max_tokens'],
-            streaming=False
+            base_url=self.config.get("base_url"),
+            model=self.config["model"],
+            temperature=self.config["temperature"],
+            max_tokens=self.config["max_tokens"],
+            streaming=False,
         )
         self.stream_client = ChatOpenAI(
             api_key=api_key,
-            base_url=self.config.get('base_url'),
-            model=self.config['model'],
-            temperature=self.config['temperature'],
-            max_tokens=self.config['max_tokens'],
-            streaming=True
+            base_url=self.config.get("base_url"),
+            model=self.config["model"],
+            temperature=self.config["temperature"],
+            max_tokens=self.config["max_tokens"],
+            streaming=True,
         )
+
 
 class ZhipuChatAdapter(BaseLLMAdapter):
     """智谱AI适配器"""
-    
+
     def __init__(self, config: Dict[str, Any]):
         """初始化智谱AI适配器
 
@@ -108,10 +111,10 @@ class ZhipuChatAdapter(BaseLLMAdapter):
             config (Dict[str, Any]): 智谱AI配置
         """
         self.config = config
-        zhipuai.api_key = config['api_key']
-        self.model = config['model']
-        self.temperature = config['temperature']
-        self.max_tokens = config['max_tokens']
+        zhipuai.api_key = config["api_key"]
+        self.model = config["model"]
+        self.temperature = config["temperature"]
+        self.max_tokens = config["max_tokens"]
 
     def __call__(self, messages: List[BaseMessage]) -> AIMessage:
         """调用智谱AI处理消息"""
@@ -120,13 +123,13 @@ class ZhipuChatAdapter(BaseLLMAdapter):
             model=self.model,
             prompt=zhipu_messages,
             temperature=self.temperature,
-            max_tokens=self.max_tokens
+            max_tokens=self.max_tokens,
         )
 
-        if response['code'] != 200:
+        if response["code"] != 200:
             raise Exception(f"智谱AI API调用失败: {response['msg']}")
 
-        return AIMessage(content=response['data']['choices'][0]['content'])
+        return AIMessage(content=response["data"]["choices"][0]["content"])
 
     def stream(self, messages: List[BaseMessage]):
         """流式调用智谱AI处理消息"""
@@ -135,7 +138,7 @@ class ZhipuChatAdapter(BaseLLMAdapter):
             model=self.model,
             prompt=zhipu_messages,
             temperature=self.temperature,
-            max_tokens=self.max_tokens
+            max_tokens=self.max_tokens,
         )
 
         for event in response.events():
@@ -158,8 +161,9 @@ class ZhipuChatAdapter(BaseLLMAdapter):
 
     def update_api_key(self, api_key: str):
         """更新API密钥"""
-        self.config['api_key'] = api_key
+        self.config["api_key"] = api_key
         zhipuai.api_key = api_key
+
 
 def create_llm_adapter(config: Dict[str, Any]) -> BaseLLMAdapter:
     """创建LLM适配器
@@ -170,23 +174,36 @@ def create_llm_adapter(config: Dict[str, Any]) -> BaseLLMAdapter:
     Returns:
         BaseLLMAdapter: LLM适配器实例
     """
-    provider = config['provider'].lower()
+    provider = config["provider"].lower()
+    if provider == "openai":
+        return OpenAIAdapter(config["openai"])
+    elif provider == "openai_deepseek":
+        return OpenAIAdapter(config["openai_deepseek"])
+    elif provider == "openai_siliconflow":
+        return OpenAIAdapter(config["openai_siliconflow"])
+    elif provider == "openai_kimi":
+        return OpenAIAdapter(config["openai_kimi"])
+    elif provider == "openai_doubao":
+        return OpenAIAdapter(config["openai_doubao"])
+    elif provider == "zhipuai":
+        return ZhipuChatAdapter(config["zhipuai"])
+    provider = config["provider"].lower()
 
-    if provider == 'openai':
-        return OpenAIAdapter(config['openai'])
-    elif provider == 'openai_deepseek':
-        return OpenAIAdapter(config['openai_deepseek'])
-    elif provider == 'openai_siliconflow':
-        return OpenAIAdapter(config['openai_siliconflow'])
-    elif provider == 'openai_kimi':
-        return OpenAIAdapter(config['openai_kimi'])
-    elif provider == 'openai_doubao':
-        return OpenAIAdapter(config['openai_doubao'])
-    elif provider == 'zhipuai':
-        return ZhipuChatAdapter(config['zhipuai'])
-    elif provider == 'ai_studio':
-        return OpenAIAdapter(config['ai_studio'])
+    if provider == "openai":
+        return OpenAIAdapter(config["openai"])
+    elif provider == "openai_deepseek":
+        return OpenAIAdapter(config["openai_deepseek"])
+    elif provider == "openai_siliconflow":
+        return OpenAIAdapter(config["openai_siliconflow"])
+    elif provider == "openai_kimi":
+        return OpenAIAdapter(config["openai_kimi"])
+    elif provider == "openai_doubao":
+        return OpenAIAdapter(config["openai_doubao"])
+    elif provider == "zhipuai":
+        return ZhipuChatAdapter(config["zhipuai"])
+    elif provider == "ai_studio":
+        return OpenAIAdapter(config["ai_studio"])
     elif provider == "ai_studio_fast_deploy":
-        return OpenAIAdapter(config['ai_studio_fast_deploy'])
+        return OpenAIAdapter(config["ai_studio_fast_deploy"])
     else:
         raise ValueError(f"不支持的LLM提供商: {provider}")
