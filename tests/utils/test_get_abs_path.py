@@ -1,3 +1,7 @@
+"""
+测试将相对路径转绝对路径使用
+"""
+
 import sys
 import pytest
 import os
