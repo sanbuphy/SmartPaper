@@ -1,0 +1,43 @@
+[
+    {
+        "type": "text",
+        "text": "HOWTOREADAI BOOK如何阅读一本书",
+        "text_level": 1,
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "",
+        "page_idx": 0
+    },
+    {
+        "type": "image",
+        "img_path": "images/dbbb2889bf03b76eb1502cf5f8fc6204777e0707e4783f8244238b158636829c.jpg",
+        "img_caption": [],
+        "img_footnote": [],
+        "page_idx": 0
+    },
+    {
+        "type": "image",
+        "img_path": "images/fe8e2015bae45ff45e33ba004bd81a93b9bb0286ef2e95b7bc8910d2b19f5e74.jpg",
+        "img_caption": [],
+        "img_footnote": [],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "如何阅读一本书",
+        "text_level": 1,
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "每本书的封面之下都有一套自己的骨架，作为一个分析阅读的读者，你的责任就是要找出这个骨架。一本书出现在你面前时，肌肉包着骨头，衣服包裹着肌肉，可说是盛装而来。你用不着揭开它的外衣或是撕去它的肌肉，才能得到在柔软表皮下的那套骨架。但是你一定要用一双X光般的透视眼来看这本书，因为那是你了解一本书、掌握其骨架的基础。",
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "本书初版于1940年，1972年大幅增订改写为新版。不论什么时候读，都不能不叹服作者对阅读用心之深，视野之广。不懂阅读的人，初探阅读的人，读这本书可以少走冤枉路。对阅读有所体会的人，读这本书可以有更深的印证和领悟。这是一本有关阅读的永不褪色的经典。",
+        "page_idx": 1
+    }
+]
