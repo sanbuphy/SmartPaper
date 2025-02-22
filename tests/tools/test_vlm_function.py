@@ -1,3 +1,9 @@
+"""
+使用当前目录下的test_datas/test_page_1.png做为测试用的图像文件，
+主要测试了视觉语言模型的描述功能和OCR功能。
+此外还测试了保存结果到文件的功能。
+"""
+
 import sys
 import os
 import pytest
@@ -15,7 +21,7 @@ from src.tools.vlm_function import (
 
 @pytest.fixture
 def image_path():
-    return "test_datas/page_1.png"
+    return "test_datas/test_page_1.png"
 
 
 @pytest.fixture
@@ -133,7 +139,7 @@ def test_save_result_to_file_basic(tmp_path, test_content):
 
 def test_save_result_to_file_default(test_content):
     # 测试默认路径保存
-    default_path = "results/result.md"
+    default_path = "test_results/test_result.md"
     save_result_to_file(test_content)
 
     # 验证默认路径文件是否存在
@@ -141,4 +147,4 @@ def test_save_result_to_file_default(test_content):
 
     # 清理测试文件
     os.remove(default_path)
-    os.rmdir("results")
+    os.rmdir("test_results")

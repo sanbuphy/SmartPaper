@@ -1,3 +1,8 @@
+"""
+测试mineru 转换 PDF 为 Markdown的功能，
+主要判断依据是是否在指定的输出目录下生成了 Markdown 文件。
+"""
+
 import sys
 import os
 import pytest
@@ -9,8 +14,10 @@ from src.utils.get_abs_path import get_abs_path
 
 
 def test_process_pdf():
-    abs_pdf_file = get_abs_path("test_datas/如何阅读一本书-output.pdf")
-    abs_output_dir = get_abs_path("test_datas/outputs")
+    abs_pdf_file = get_abs_path("test_datas/test_如何阅读一本书-output.pdf")
+    abs_output_dir = get_abs_path("test_datas/test_outputs")
+    # 创建目录
+    os.makedirs(abs_output_dir, exist_ok=True)
     md_file_path = process_pdf(abs_pdf_file, abs_output_dir)
 
     assert md_file_path.startswith(

@@ -12,11 +12,15 @@
 - `test_markdown_converter.py`: 测试各种格式文件到Markdown的转换功能
 - `test_pdf_converter.py`: 测试PDF文件的处理和转换功能
 - `test_arxiv_download_read.py`: 测试arXiv论文下载和读取功能
-
+- `test_mineru_convert.py`: 测试MinerU数据转换功能
+- `test_vlm_function.py`: 测试多模态模型描述图片或者提取图片内容成markdown格式。
+- `test_download_model.py`: 测试模型下载功能
+- `test_add_md_image_description.py`:给markdown内的图片添加描述
 ### integration/ - 集成测试
 - `test_multiple_urls.py`: 测试多个URL的批量处理功能
 - `test_single_local_papers.py`: 测试本地论文文件的完整处理流程
 - `test_single_url.py`: 测试单个URL的完整处理流程
+- `test_get_abs_path.py`: 将相对路径转换为绝对路径
 
 ## 运行测试
 

@@ -1,3 +1,7 @@
+"""
+测试 add_md_image_description 函数给markdown文件内的图片添加注释，主要判断依据是是否报错。
+"""
+
 import sys
 import os
 import pytest
