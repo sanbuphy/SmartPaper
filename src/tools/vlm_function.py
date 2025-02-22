@@ -25,14 +25,14 @@
   - `api_key (str, optional)`: API密钥，默认为None。
   - `model (str, optional)`: 使用的模型名称，默认为 "Qwen/Qwen2-VL-72B-Instruct"。
   - `prompt (str, optional)`: 描述的提示信息。
-  - `description_prompt_path (str, optional)`: 描述提示文件路径，默认为 "test_description_prompt.md"。
+  - `description_prompt_path (str, optional)`: 描述提示文件路径，默认为 "test_vlm_function_description_prompt.md"。
   - **返回值**：图像内容的Markdown描述。
 
 - **extract_text_from_image函数**：
   - `image_path (str)`: 图像文件路径。
   - `model (str, optional)`: 使用的模型名称，默认为 "Qwen/Qwen2-VL-72B-Instruct"。
   - `prompt (str, optional)`: OCR的提示信息。
-  - `ocr_prompt_path (str, optional)`: OCR提示文件路径，默认为 "test_ocr_prompt.md"。
+  - `ocr_prompt_path (str, optional)`: OCR提示文件路径，默认为 "test_vlm_function_ocr_prompt.md"。
   - **返回值**：从图像中提取的文本内容。
 
 - **save_result_to_file函数**：
@@ -109,7 +109,7 @@ def describe_image(
     api_key: str = None,
     model: str = "Qwen/Qwen2-VL-72B-Instruct",
     prompt: str = None,
-    description_prompt_path: str = "test_description_prompt.md",
+    description_prompt_path: str = "test_vlm_function_description_prompt.md",
 ) -> str:
     """
     描述图像的内容。
@@ -141,7 +141,7 @@ def extract_text_from_image(
     image_path: str,
     model: str = "Qwen/Qwen2-VL-72B-Instruct",
     prompt: str = None,
-    ocr_prompt_path: str = "test_ocr_prompt.md",
+    ocr_prompt_path: str = "test_vlm_function_ocr_prompt.md",
 ) -> str:
     """
     从图像中提取文本内容（OCR）。

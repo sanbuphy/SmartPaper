@@ -1,9 +1,17 @@
 import os
 import sys
 import argparse
+import yaml
 from loguru import logger
-from src.core.reader import SmartPaper
+from src.core.processor import PaperProcessor
 from src.prompts.prompt_library import list_prompts
+
+
+def load_config():
+    """加载配置文件"""
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config", "config.yaml")
+    with open(config_path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
 
 
 def process_paper(url: str, prompt_name: str = "yuanbao"):
@@ -14,21 +22,32 @@ def process_paper(url: str, prompt_name: str = "yuanbao"):
         prompt_name (str): 提示词模板名称
     """
     try:
-        # 初始化SmartPaper
-        reader = SmartPaper(output_format="markdown")
         logger.info(f"使用提示词模板: {prompt_name}")
 
-        # 处理论文
-        result = reader.process_paper_url(url, mode="prompt", prompt_name=prompt_name)
-
-        # 创建输出目录
+        # 创建输出目录及输出文件
         output_dir = "outputs"
         os.makedirs(output_dir, exist_ok=True)
-
-        # 保存结果
         output_file = os.path.join(output_dir, f"analysis_prompt_{prompt_name}.md")
         with open(output_file, "w", encoding="utf-8") as f:
-            f.write(result["result"])
+            f.write("")
+
+        # 加载配置
+        config = load_config()
+
+        # 初始化PaperProcessor
+        processor = PaperProcessor(config)
+
+        # 流式处理论文并实时输出
+        print("分析结果:\n")
+
+        # 使用流式处理
+        for chunk in processor.process_stream(url, prompt_name=prompt_name):
+            # 流式打印到控制台
+            print(chunk, end="", flush=True)
+            # 追加写入输出文件
+            with open(output_file, "a", encoding="utf-8") as f:
+                f.write(chunk)
+        print("\n")
 
         logger.info(f"分析结果已保存到: {output_file}")
 
@@ -39,7 +58,12 @@ def process_paper(url: str, prompt_name: str = "yuanbao"):
 
 def main():
     """主函数"""
-    # 创建参数解析器
+    # 显示可用的提示词模板
+    print("\n可用的提示词模板:")
+    for name, desc in list_prompts().items():
+        print(f"- {name}: {desc}")
+    print()
+
     parser = argparse.ArgumentParser(description="论文分析工具")
     parser.add_argument(
         "url", nargs="?", default="https://arxiv.org/pdf/2305.12002", help="论文URL"
@@ -48,19 +72,9 @@ def main():
         "--prompt", "-p", default="yuanbao", choices=list_prompts().keys(), help="提示词模板名称"
     )
 
-    # 解析参数
     args = parser.parse_args()
-
-    # 处理论文
     process_paper(args.url, args.prompt)
 
 
 if __name__ == "__main__":
-    # 显示可用的提示词模板
-    print("\n可用的提示词模板:")
-    for name, desc in list_prompts().items():
-        print(f"- {name}: {desc}")
-    print()
-
-    # 运行主函数
     main()

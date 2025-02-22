@@ -12,8 +12,9 @@ from src.tools.add_md_image_description import add_md_image_description
 
 
 def test_add_image_description():
-    abs_file_path = os.path.abspath(
-        "test_datas/outputs/如何阅读一本书-output-9f96686d-a662-474c-a04c-408c374231a5/如何阅读一本书-output.md"
+    current_file_dir = os.path.abspath(os.path.dirname(__file__))
+    abs_file_path = os.path.join(
+        current_file_dir, "test_mineru_outputs/test_mineru_add_image_description_如何阅读一本书.md"
     )
     try:
         add_md_image_description(abs_file_path, force_add_desc=True)

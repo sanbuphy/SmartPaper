@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from src.utils.get_abs_path import get_abs_path
 
 # 创建测试数据目录和文件
-test_data_dir = os.path.join(os.path.dirname(__file__), "test_datas")
+test_data_dir = os.path.join(os.path.dirname(__file__), "test_get_abs_path_datas")
 os.makedirs(test_data_dir, exist_ok=True)
 
 test_file_1 = os.path.join(test_data_dir, "test_file_1.txt")

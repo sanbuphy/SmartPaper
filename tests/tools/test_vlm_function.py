@@ -21,7 +21,9 @@ from src.tools.vlm_function import (
 
 @pytest.fixture
 def image_path():
-    return "test_datas/test_page_1.png"
+    current_file_dir = os.path.abspath(os.path.dirname(__file__))
+    abs_file_path = os.path.join(current_file_dir, "test_datas/test_vlm_function_page_1.png")
+    return abs_file_path
 
 
 @pytest.fixture
