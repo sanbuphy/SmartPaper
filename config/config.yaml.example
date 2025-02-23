@@ -44,13 +44,13 @@ llm:
     temperature: 0.7
     max_tokens: 8192
   ai_studio:
-    api_key: "6d7"
+    api_key: "your-api-key"
     base_url: "https://aistudio.baidu.com/llm/lmapi/v3"
     model: "deepseek-r1"
     temperature: 0.7
     max_tokens: 8192
   ai_studio_fast_deploy:
-    api_key: "659"
+    api_key: "your-api-key"
     base_url: "https://api-f6f9v9xdo8n0j2yd.aistudio-app.com/v1"
     model: "deepseek-r1:32b"
     temperature: 0.7

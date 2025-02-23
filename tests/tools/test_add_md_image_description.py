@@ -14,7 +14,8 @@ from src.tools.add_md_image_description import add_md_image_description
 def test_add_image_description():
     current_file_dir = os.path.abspath(os.path.dirname(__file__))
     abs_file_path = os.path.join(
-        current_file_dir, "test_mineru_outputs/test_mineru_add_image_description_如何阅读一本书.md"
+        current_file_dir,
+        "test_datas/test_mineru_outputs/test_mineru_add_image_description_如何阅读一本书.md",
     )
     try:
         add_md_image_description(abs_file_path, force_add_desc=True)
