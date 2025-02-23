@@ -4,9 +4,12 @@
 """
 
 import os
+import sys
 import pytest
 from typing import Dict
 from openai import OpenAI
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from src.tools.markdown_converter import MarkdownConverter
 

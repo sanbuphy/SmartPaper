@@ -1,3 +1,42 @@
+"""
+#### 使用说明：
+
+该代码实现了将不同格式文件转换为Markdown格式的功能，并且支持从URL下载文件并转换。
+
+#### 主要功能：
+- 初始化转换器，配置LLM客户端和模型。
+- 支持多种文件格式的转换（如PDF、Word、Excel、图片等）。
+- 从URL下载文件并转换为Markdown内容。
+- 支持对PDF文件进行特殊处理（如处理arxiv.org上的PDF）。
+- 对URL请求失败时，自动重试多次，带有指数退避。
+
+#### 参数说明：
+
+- **MarkdownConverter类构造函数**：
+  - `llm_client (Any)`: LLM客户端，用于图像描述等高级功能。
+  - `llm_model (str)`: LLM模型名称。
+  - `config (Dict, optional)`: 配置信息（如最大请求次数等）。
+
+- **convert函数**：
+  - `file_path (str)`: 要转换的文件路径。
+  - **返回值**：返回一个包含`text_content`（转换后的Markdown文本），`metadata`（附加元数据），以及`images`（转换过程中提取的图片）的字典。
+
+- **convert_url函数**：
+  - `url (str)`: 需要下载并转换的文件的URL。
+  - `description (str, optional)`: 论文的描述，适用于arxiv.org的PDF文件。
+  - **返回值**：返回一个包含`text_content`（转换后的Markdown文本），`metadata`（附加元数据），以及`images`（转换过程中提取的图片）的字典。
+
+#### 注意事项：
+- 请确保安装了`requests`、`mimetypes`、`markitdown`、`loguru`等依赖库。
+- 支持的文件类型包括：PDF、Word、PPT、图片、HTML、CSV等常见格式。
+- 下载文件时，存在重试机制，网络错误会自动重试。
+
+#### 更多信息：
+- 本转换器提供了LLM集成，可以对图像或复杂内容进行更深入的分析和描述。
+
+
+"""
+
 import os
 from typing import Dict, List, Optional, Any
 from pathlib import Path

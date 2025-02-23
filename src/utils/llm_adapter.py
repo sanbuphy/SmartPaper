@@ -187,5 +187,23 @@ def create_llm_adapter(config: Dict[str, Any]) -> BaseLLMAdapter:
         return OpenAIAdapter(config["openai_doubao"])
     elif provider == "zhipuai":
         return ZhipuChatAdapter(config["zhipuai"])
+    provider = config["provider"].lower()
+
+    if provider == "openai":
+        return OpenAIAdapter(config["openai"])
+    elif provider == "openai_deepseek":
+        return OpenAIAdapter(config["openai_deepseek"])
+    elif provider == "openai_siliconflow":
+        return OpenAIAdapter(config["openai_siliconflow"])
+    elif provider == "openai_kimi":
+        return OpenAIAdapter(config["openai_kimi"])
+    elif provider == "openai_doubao":
+        return OpenAIAdapter(config["openai_doubao"])
+    elif provider == "zhipuai":
+        return ZhipuChatAdapter(config["zhipuai"])
+    elif provider == "ai_studio":
+        return OpenAIAdapter(config["ai_studio"])
+    elif provider == "ai_studio_fast_deploy":
+        return OpenAIAdapter(config["ai_studio_fast_deploy"])
     else:
         raise ValueError(f"不支持的LLM提供商: {provider}")

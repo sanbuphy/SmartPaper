@@ -24,3 +24,11 @@ black>=24.2.0
 isort>=5.13.2
 flake8>=7.0.0
 flake8-docstrings>=1.7.0
+
+streamlit>=1.42.0
+pymupdf
+langchain_openai
+modelscope
+magic-pdf[full]
+--extra-index-url https://wheels.myhloli.com
+--index-url https://mirrors.aliyun.com/pypi/simple
