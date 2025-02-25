@@ -123,12 +123,18 @@ def reanalyze_paper(url: str, prompt_name: str):
     st.session_state.messages.append(
         {"role": "user", "content": f"请重新分析论文: {url} 使用提示词模板: {prompt_name}"}
     )
+    
+    # 创建进度显示区域
+    progress_placeholder = st.empty()
+    
     # 处理论文
     with st.spinner("正在重新分析论文..."):
         full_output = ""
         for result in process_paper(url, prompt_name):
             if result["type"] == "chunk":
                 full_output += result["content"]
+                # 实时更新进度显示
+                progress_placeholder.markdown(full_output)
             elif result["type"] == "final":
                 if result["success"]:
                     response = full_output
@@ -152,6 +158,10 @@ def reanalyze_paper(url: str, prompt_name: str):
                     }
                 st.session_state.messages.append(new_message)
                 break
+    
+    # 清空进度显示区域
+    progress_placeholder.empty()
+    
     # 刷新页面以更新聊天历史
     logger.debug("重新加载页面以更新聊天历史")
     st.rerun()
@@ -380,6 +390,9 @@ def main():
                             logger.info(f"用户请求重新分析，使用提示词模板: {selected_prompt_reanalyze}")
                             reanalyze_paper(message["url"], selected_prompt_reanalyze)
 
+    # 创建当前分析进展区域
+    progress_container = st.container()
+    
     # 处理新论文并流式输出
     if process_button:
         logger.info(f"用户点击开始分析按钮，URL: {paper_url}, 提示词模板: {selected_prompt}")
@@ -406,35 +419,11 @@ def main():
             st.session_state.messages.append(
                 {"role": "user", "content": f"请分析论文: {paper_url}"}
             )
-            # 显示当前聊天历史
-            with chat_container:
-                for i, message in enumerate(st.session_state.messages):
-                    with st.chat_message(message["role"]):
-                        st.markdown(message["content"])
-                        if "file_name" in message:
-                            st.download_button(
-                                label=f"下载 {message['file_name']}",
-                                data=message["content"],
-                                file_name=message["file_name"],
-                                mime="text/markdown",
-                                key=f"download_{message['file_name']}_{i}",
-                            )
-                        if "url" in message:
-                            with st.expander("重新分析"):
-                                prompt_options = list_prompts()
-                                selected_prompt_reanalyze = st.selectbox(
-                                    "选择提示词模板",
-                                    options=list(prompt_options.keys()),
-                                    format_func=lambda x: f"{x}: {prompt_options[x]}",
-                                    key=f"reanalyze_prompt_{i}",
-                                )
-                                if st.button("重新分析", key=f"reanalyze_button_{i}"):
-                                    logger.info(f"用户请求重新分析，使用提示词模板: {selected_prompt_reanalyze}")
-                                    reanalyze_paper(message["url"], selected_prompt_reanalyze)
-
-            # 创建当前分析进展区域
-            st.write("### 当前分析进展\n")
-            progress_placeholder = st.empty()
+            
+            # 在进度容器中创建进度显示区域
+            with progress_container:
+                st.write("### 当前分析进展\n")
+                progress_placeholder = st.empty()
 
             with st.spinner("正在处理论文..."):
                 logger.info(f"开始分析论文: {paper_url}")
@@ -442,6 +431,7 @@ def main():
                 for result in process_paper(paper_url, selected_prompt):
                     if result["type"] == "chunk":
                         full_output += result["content"]
+                        # 实时更新进度显示
                         progress_placeholder.markdown(full_output)
                     elif result["type"] == "final":
                         if result["success"]:
@@ -473,10 +463,32 @@ def main():
                             st.session_state.messages.append(message)
                         break
 
-            # 清空进度显示区域
-            progress_placeholder.empty()
-            logger.debug("分析完成，刷新页面以更新聊天历史")
-            st.experimental_rerun()
+            # 分析完成后不清空进度显示，保持结果可见
+            # 更新聊天历史显示
+            with chat_container:
+                for i, message in enumerate(st.session_state.messages):
+                    with st.chat_message(message["role"]):
+                        st.markdown(message["content"])
+                        if "file_name" in message:
+                            st.download_button(
+                                label=f"下载 {message['file_name']}",
+                                data=message["content"],
+                                file_name=message["file_name"],
+                                mime="text/markdown",
+                                key=f"download_{message['file_name']}_{i}",
+                            )
+                        if "url" in message:
+                            with st.expander("重新分析"):
+                                prompt_options = list_prompts()
+                                selected_prompt_reanalyze = st.selectbox(
+                                    "选择提示词模板",
+                                    options=list(prompt_options.keys()),
+                                    format_func=lambda x: f"{x}: {prompt_options[x]}",
+                                    key=f"reanalyze_prompt_{i}",
+                                )
+                                if st.button("重新分析", key=f"reanalyze_button_{i}"):
+                                    logger.info(f"用户请求重新分析，使用提示词模板: {selected_prompt_reanalyze}")
+                                    reanalyze_paper(message["url"], selected_prompt_reanalyze)
 
 
 if __name__ == "__main__":
