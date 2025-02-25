@@ -3,10 +3,10 @@ from typing import Dict, List, Optional, Generator
 import yaml
 from pathlib import Path
 
-from .processor import PaperProcessor
-from .agent import PaperAgent
-from ..tools.pdf_to_md_markitdown import MarkdownConverter
-from ..utils.output_formatter import OutputFormatter
+from src.core.llm_wrapper import LLMWrapper
+from src.core.agent import PaperAgent
+from src.tools.pdf_to_md_markitdown import MarkdownConverter
+from src.utils.output_formatter import OutputFormatter
 from loguru import logger
 
 
@@ -34,7 +34,7 @@ class SmartPaper:
 
         # 初始化组件
         self.converter: MarkdownConverter = MarkdownConverter(config=self.config)
-        self.processor: PaperProcessor = PaperProcessor(self.config)
+        self.processor: LLMWrapper = LLMWrapper(self.config)
         self.agent: PaperAgent = PaperAgent(self.config)
         self.output_formatter: OutputFormatter = OutputFormatter(self.config["output"])
         logger.info("初始化组件完成")

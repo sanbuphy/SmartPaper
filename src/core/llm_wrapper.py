@@ -5,8 +5,8 @@ from src.utils.llm_adapter import create_llm_adapter
 from loguru import logger
 
 
-class PaperProcessor:
-    """论文处理器"""
+class LLMWrapper:
+    """这是一个LLM包装器，用于处理LLM相关的操作"""
 
     def __init__(self, config: Dict):
         """初始化处理器

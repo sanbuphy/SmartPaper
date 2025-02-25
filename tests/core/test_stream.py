@@ -11,7 +11,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pytest
-from src.core.processor import PaperProcessor
+from src.core.llm_wrapper import LLMWrapper
 from unittest.mock import MagicMock, patch
 from langchain.schema import AIMessage, HumanMessage
 import yaml
@@ -37,7 +37,7 @@ def mock_config():
 @pytest.fixture
 def processor(mock_config):
     with patch("src.utils.llm_adapter.ChatOpenAI"):
-        return PaperProcessor(mock_config)
+        return LLMWrap(mock_config)
 
 
 def load_config():
@@ -50,7 +50,7 @@ def load_config():
 def test_stream_chat():
     """测试真实的流式对话"""
     config = load_config()
-    processor = PaperProcessor(config)
+    processor = LLMWrap(config)
 
     # 进行对话测试
     questions = ["你是谁？", "你能做什么？", "总结一下我们的对话"]
