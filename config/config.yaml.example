@@ -17,9 +17,9 @@ llm:
   openai_siliconflow:
     api_key: "your-api-key"
     base_url: "https://api.siliconflow.com/v1"
-    model: "gpt-4-1106-preview"
+    model: "Qwen/Qwen2.5-72B-Instruct"
     temperature: 0.7
-    max_tokens: 8192
+    max_tokens: 4096
   openai_kimi:
     api_key: "your-api-key"
     base_url: "https://api.moonshot.cn/v1"

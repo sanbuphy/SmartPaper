@@ -3,9 +3,8 @@ import sys
 import argparse
 import yaml
 from loguru import logger
-from src.core.processor import PaperProcessor
+from src.core.reader import SmartPaper
 from src.prompts.prompt_library import list_prompts
-
 
 def load_config():
     """加载配置文件"""
@@ -31,17 +30,14 @@ def process_paper(url: str, prompt_name: str = "yuanbao"):
         with open(output_file, "w", encoding="utf-8") as f:
             f.write("")
 
-        # 加载配置
-        config = load_config()
-
-        # 初始化PaperProcessor
-        processor = PaperProcessor(config)
+        # 初始化SmartPaper
+        reader = SmartPaper(output_format="markdown")
 
         # 流式处理论文并实时输出
         print("分析结果:\n")
 
         # 使用流式处理
-        for chunk in processor.process_stream(url, prompt_name=prompt_name):
+        for chunk in reader.process_paper_url_stream(url, mode="prompt", prompt_name=prompt_name):
             # 流式打印到控制台
             print(chunk, end="", flush=True)
             # 追加写入输出文件
@@ -69,7 +65,7 @@ def main():
         "url", nargs="?", default="https://arxiv.org/pdf/2305.12002", help="论文URL"
     )
     parser.add_argument(
-        "--prompt", "-p", default="yuanbao", choices=list_prompts().keys(), help="提示词模板名称"
+        "--prompt", "-p", default="coolpapaers", choices=list_prompts().keys(), help="提示词模板名称"
     )
 
     args = parser.parse_args()

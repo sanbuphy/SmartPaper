@@ -1,3 +1,5 @@
+--index-url https://mirrors.aliyun.com/pypi/simple/
+
 langchain>=0.3.14
 langchain-community>=0.3.14
 pydantic>=2.10.5
@@ -25,10 +27,13 @@ isort>=5.13.2
 flake8>=7.0.0
 flake8-docstrings>=1.7.0
 
+# 其他依赖
 streamlit>=1.42.0
+loguru
 pymupdf
 langchain_openai
 modelscope
-magic-pdf[full]
---extra-index-url https://wheels.myhloli.com
---index-url https://mirrors.aliyun.com/pypi/simple
+
+# TODO 有关magic-pdf的转换的接口支持
+# magic-pdf[full]
+# --extra-index-url https://wheels.myhloli.com
