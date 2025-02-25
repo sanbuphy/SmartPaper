@@ -4,7 +4,7 @@ import argparse
 import yaml
 from loguru import logger
 from src.core.reader import SmartPaper
-from core.prompt_library import list_prompts
+from src.core.prompt_library import list_prompts
 
 
 def load_config():
