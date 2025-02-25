@@ -77,7 +77,7 @@ output:
 
 # 提示词配置
 prompts:
-  file: "config/prompts.yaml"  # 提示词配置文件路径
+  file: "config/prompts_llm.yaml"  # 提示词配置文件路径
   default: "summary"
   available:
     - summary

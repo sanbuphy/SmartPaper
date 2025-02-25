@@ -15,7 +15,7 @@ class PromptLibrary:
         if prompt_file is None:
             # 获取项目根目录的绝对路径
             root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            self.prompt_file = os.path.join(root_dir, "config", "prompts.yaml")
+            self.prompt_file = os.path.join(root_dir, "config", "prompts_llm.yaml")
         else:
             self.prompt_file = prompt_file
 
