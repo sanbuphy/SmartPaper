@@ -53,10 +53,27 @@ class OpenAIAdapter(BaseLLMAdapter):
             config (Dict[str, Any]): OpenAI配置
         """
         self.config = config
+
+        # 根据 default_model_index 选择模型
+        if "models" in config:
+            try:
+                model_index = config.get("default_model_index", 0)
+                if not 0 <= model_index < len(config["models"]):
+                    raise ValueError(
+                        f"default_model_index {model_index} 超出模型列表范围 [0, {len(config['models'])-1}]"
+                    )
+                selected_model = config["models"][model_index]
+            except IndexError:
+                raise ValueError(
+                    f"default_model_index {model_index} 超出模型列表范围 [0, {len(config['models'])-1}]"
+                )
+        else:
+            selected_model = config["model"]
+
         self.client = ChatOpenAI(
             api_key=config["api_key"],
             base_url=config.get("base_url"),  # 可选的自定义API端点
-            model=config["model"],
+            model=selected_model,
             temperature=config["temperature"],
             max_tokens=config["max_tokens"],
             streaming=False,
@@ -64,7 +81,7 @@ class OpenAIAdapter(BaseLLMAdapter):
         self.stream_client = ChatOpenAI(
             api_key=config["api_key"],
             base_url=config.get("base_url"),
-            model=config["model"],
+            model=selected_model,
             temperature=config["temperature"],
             max_tokens=config["max_tokens"],
             streaming=True,
@@ -112,7 +129,23 @@ class ZhipuChatAdapter(BaseLLMAdapter):
         """
         self.config = config
         zhipuai.api_key = config["api_key"]
-        self.model = config["model"]
+
+        # 根据 default_model_index 选择模型
+        if "models" in config:
+            try:
+                model_index = config.get("default_model_index", 0)
+                if not 0 <= model_index < len(config["models"]):
+                    raise ValueError(
+                        f"default_model_index {model_index} 超出模型列表范围 [0, {len(config['models'])-1}]"
+                    )
+                self.model = config["models"][model_index]
+            except IndexError:
+                raise ValueError(
+                    f"default_model_index {model_index} 超出模型列表范围 [0, {len(config['models'])-1}]"
+                )
+        else:
+            self.model = config["model"]
+
         self.temperature = config["temperature"]
         self.max_tokens = config["max_tokens"]
 

@@ -11,7 +11,7 @@ from openai import OpenAI
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.tools.markdown_converter import MarkdownConverter
+from tools.pdf_to_md_markitdown import MarkdownConverter
 
 
 @pytest.fixture

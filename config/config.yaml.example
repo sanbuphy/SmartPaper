@@ -55,6 +55,19 @@ llm:
     model: "deepseek-r1:32b"
     temperature: 0.7
     max_tokens: 8192
+
+vlm:
+  provider: "openai_siliconflow"  # 可选的提供商包括: openai_siliconflow
+  openai_siliconflow:
+    api_key: "your-api-key"
+    base_url: "https://api.siliconflow.com/v1"
+    models:
+      - "Qwen/Qwen2-VL-72B-Instruct"
+      - "Qwen/Qwen2-VL-7B-Instruct"
+    temperature: 0.7
+    max_tokens: 4096
+
+
 # 输出配置
 output:
   default_format: "markdown"  # 可选: markdown, csv, folder

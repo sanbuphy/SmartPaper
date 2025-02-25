@@ -61,7 +61,7 @@ import os
 # 将父目录添加到系统路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.tools.image2text import ImageTextExtractor
+from src.tools.image_to_txt import ImageTextExtractor
 
 
 def image_to_base64(image_path: str) -> str:

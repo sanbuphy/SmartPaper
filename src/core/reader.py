@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .processor import PaperProcessor
 from .agent import PaperAgent
-from ..tools.markdown_converter import MarkdownConverter
+from ..tools.pdf_to_md_markitdown import MarkdownConverter
 from ..utils.output_formatter import OutputFormatter
 from loguru import logger
 
@@ -13,7 +13,7 @@ from loguru import logger
 class SmartPaper:
     """论文阅读和存档工具"""
 
-    def __init__(self, config_file: str = None, output_format: str = "markdown"):
+    def __init__(self, config_file: str | None = None, output_format: str = "markdown"):
         """初始化SmartPaper实例
 
         Args:
@@ -140,7 +140,7 @@ class SmartPaper:
             # 获取PDF内容
             text_content = result["text_content"]
             metadata = result["metadata"]
-            
+
             # 根据模式处理
             if mode == "prompt":
                 analysis = self.processor.process_with_content(text_content, prompt_name)
@@ -171,28 +171,28 @@ class SmartPaper:
 
         Yields:
             str: 流式输出的文本片段
-            
+
         Raises:
             Exception: 当处理失败时抛出异常
         """
         try:
             # 打印 metainfo 信息
             yield "✨ 元数据信息 ✨\n\n"
-            yield f"📄 处理URL: {url}\n\n"   
+            yield f"📄 处理URL: {url}\n\n"
             yield f"🔍 处理模式: {mode}\n\n"
             yield f"💡 提示词模板: {prompt_name if prompt_name else '默认'}\n\n"
             yield f"📝 描述信息: {description if description else '无'}\n\n"
             # 下载并转换PDF
             logger.info(f"开始流式处理论文URL: {url}")
             yield "🚀 正在下载并转换PDF...\n\n"
-            
+
             result = self.converter.convert_url(url, description=description)
             logger.info("PDF转换完成，开始流式分析")
             yield "✅ PDF转换完成，开始分析...\n\n"
-            
+
             # 获取PDF内容
             text_content = result["text_content"]
-            
+
             # 根据模式处理
             if mode == "prompt":
                 yield "使用提示词模式进行分析...\n"
@@ -204,7 +204,7 @@ class SmartPaper:
                 # 使用agent的流式接口
                 for chunk in self.agent.analyze_stream(text_content):
                     yield chunk
-                
+
             logger.info(f"流式分析完成，使用模式: {mode}")
 
         except Exception as e:
@@ -212,6 +212,7 @@ class SmartPaper:
             logger.error(error_msg)
             yield f"错误: {error_msg}"
             raise Exception(error_msg)
+
     def set_api_key(self, api_key: str):
         """设置API密钥
 

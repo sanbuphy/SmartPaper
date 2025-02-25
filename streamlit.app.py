@@ -19,15 +19,6 @@ from typing import List, Dict
 import sys
 import uuid  # 用于生成用户唯一ID
 
-def load_config():
-    """加载配置文件"""
-    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config", "config.yaml")
-    logger.info(f"正在加载配置文件: {config_path}")
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
-    logger.debug(f"配置加载成功，包含以下提供商: {list(config.get('providers', {}).keys())}")
-    return config
-
 
 def validate_and_format_arxiv_url(url: str) -> str:
     """验证并格式化arXiv URL
@@ -45,7 +36,7 @@ def validate_and_format_arxiv_url(url: str) -> str:
     """
     logger.debug(f"验证URL格式: {url}")
     # 检查是否是arXiv URL
-    arxiv_pattern = r'https?://arxiv\.org/(abs|pdf)/(\d+\.\d+)(v\d+)?'
+    arxiv_pattern = r"https?://arxiv\.org/(abs|pdf)/(\d+\.\d+)(v\d+)?"
     match = re.match(arxiv_pattern, url)
 
     if not match:
@@ -99,7 +90,9 @@ def process_paper(url: str, prompt_name: str = "yuanbao"):
         with open(output_file, "w", encoding="utf-8") as f:
             chunk_count = 0
             total_length = 0
-            for chunk in reader.process_paper_url_stream(url, mode="prompt", prompt_name=prompt_name):
+            for chunk in reader.process_paper_url_stream(
+                url, mode="prompt", prompt_name=prompt_name
+            ):
                 chunk_count += 1
                 total_length += len(chunk)
                 f.write(chunk)
@@ -172,14 +165,15 @@ def main():
     logger.info("启动SmartPaperGUI界面")
 
     # 添加自定义CSS样式
-    st.markdown("""
+    st.markdown(
+        """
     <style>
         /* 整体页面样式 */
         .main {
             background-color: #f8f9fa;
             padding: 20px;
         }
-        
+
         /* 标题样式 */
         h1 {
             color: #1e3a8a;
@@ -189,7 +183,7 @@ def main():
             padding-bottom: 10px;
             border-bottom: 2px solid #3b82f6;
         }
-        
+
         /* 副标题样式 */
         h3 {
             color: #1e40af;
@@ -199,26 +193,26 @@ def main():
             padding-left: 10px;
             border-left: 4px solid #3b82f6;
         }
-        
+
         /* 聊天消息容器 */
         .stChatMessage {
             border-radius: 10px;
             margin-bottom: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        
+
         /* 按钮样式 */
         .stButton>button {
             border-radius: 8px;
             font-weight: 500;
             transition: all 0.3s ease;
         }
-        
+
         .stButton>button:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        
+
         /* 下载按钮样式 */
         .stDownloadButton>button {
             background-color: #4f46e5;
@@ -227,42 +221,47 @@ def main():
             padding: 5px 15px;
             border-radius: 6px;
         }
-        
+
         /* 侧边栏样式 */
         .css-1d391kg {
             background-color: #f1f5f9;
             padding: 20px 10px;
         }
-        
+
         /* 输入框样式 */
         .stTextInput>div>div>input {
             border-radius: 8px;
             border: 1px solid #d1d5db;
             padding: 10px;
         }
-        
+
         /* URL输入框高亮样式 */
         .url-input {
             border: 2px solid #3b82f6 !important;
             background-color: #eff6ff !important;
             box-shadow: 0 0 10px rgba(59, 130, 246, 0.3) !important;
         }
-        
+
         /* 选择框样式 */
         .stSelectbox>div>div {
             border-radius: 8px;
         }
     </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     # 设置页面标题
     st.title("SmartPaper")
-    st.markdown("""
+    st.markdown(
+        """
     <div style="color: gray; font-size: 0.8em;">
-        <b>SmartPaper</b>: <a href="https://github.com/sanbuphy/SmartPaper">GitHub</a> - 
+        <b>SmartPaper</b>: <a href="https://github.com/sanbuphy/SmartPaper">GitHub</a> -
         一个迷你助手，帮助您快速阅读论文
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     # 初始化会话状态
     if "messages" not in st.session_state:
@@ -305,25 +304,29 @@ def main():
             "选择一个示例论文URL",
             options=example_urls,
             format_func=lambda x: x.split("/")[-1] if "/" in x else x,
-            help="选择一个预设的论文URL作为示例"
+            help="选择一个预设的论文URL作为示例",
         )
 
         # 输入论文URL，使用高亮样式
-        st.markdown("""
+        st.markdown(
+            """
         <div style="margin-top: 20px; margin-bottom: 10px; font-weight: bold; color: #1e40af;">
-            👇 在下方输入论文URL 👇
+            👇 请在下方输入论文URL 👇
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
         paper_url = st.text_input(
             "论文URL",
             value=selected_example,
             help="输入要分析的论文URL (支持arXiv URL，自动转换为PDF格式)",
-            key="paper_url_input"
+            key="paper_url_input",
         )
 
         # 添加JavaScript来高亮URL输入框
-        st.markdown("""
+        st.markdown(
+            """
         <script>
             // 等待页面加载完成
             setTimeout(function() {
@@ -334,7 +337,9 @@ def main():
                 }
             }, 500);
         </script>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
         if paper_url != selected_example:
             logger.debug(f"用户输入论文URL: {paper_url}")
@@ -347,7 +352,8 @@ def main():
             clear_button = st.button("清空结果", use_container_width=True)
 
         # 添加一些说明信息
-        st.markdown("""
+        st.markdown(
+            """
         <div style="margin-top: 30px; padding: 15px; background-color: #e0f2fe; border-radius: 8px; border-left: 4px solid #0ea5e9;">
             <h4 style="margin-top: 0; color: #0369a1;">使用说明</h4>
             <p style="font-size: 0.9em; color: #0c4a6e;">
@@ -357,7 +363,9 @@ def main():
                 4. 等待分析完成后可下载结果
             </p>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     # 清空聊天历史和已处理论文记录
     if clear_button:
@@ -393,7 +401,9 @@ def main():
                             key=f"reanalyze_prompt_{i}",
                         )
                         if st.button("重新分析", key=f"reanalyze_button_{i}"):
-                            logger.info(f"用户请求重新分析，使用提示词模板: {selected_prompt_reanalyze}")
+                            logger.info(
+                                f"用户请求重新分析，使用提示词模板: {selected_prompt_reanalyze}"
+                            )
                             reanalyze_paper(message["url"], selected_prompt_reanalyze)
 
     # 创建当前分析进展区域
@@ -409,17 +419,19 @@ def main():
         except ValueError as exc:
             logger.error("用户输入无效 arXiv URL")
             st.error(str(exc))
-            st.session_state.messages.append({
-                "role": "论文分析助手",
-                "content": f"错误: {exc}",
-                "url": paper_url,
-            })
+            st.session_state.messages.append(
+                {
+                    "role": "论文分析助手",
+                    "content": f"错误: {exc}",
+                    "url": paper_url,
+                }
+            )
             st.experimental_rerun()
             return
 
         if paper_url in st.session_state.processed_papers:
             logger.warning(f"论文已分析过: {paper_url}")
-            st.warning("该论文已经分析过，如果不满意，可以点击对应分析结果的\"重新分析\"按钮。")
+            st.warning('该论文已经分析过，如果不满意，可以点击对应分析结果的"重新分析"按钮。')
         else:
             # 添加用户消息到聊天历史
             st.session_state.messages.append(
@@ -469,7 +481,9 @@ def main():
                             st.session_state.messages.append(message)
                         break
 
-            # 分析完成后不清空进度显示，保持结果可见
+            # 分析完成后清空进度显示
+            progress_placeholder.empty()
+
             # 更新聊天历史显示
             with chat_container:
                 for i, message in enumerate(st.session_state.messages):
@@ -493,7 +507,9 @@ def main():
                                     key=f"reanalyze_prompt_{i}",
                                 )
                                 if st.button("重新分析", key=f"reanalyze_button_{i}"):
-                                    logger.info(f"用户请求重新分析，使用提示词模板: {selected_prompt_reanalyze}")
+                                    logger.info(
+                                        f"用户请求重新分析，使用提示词模板: {selected_prompt_reanalyze}"
+                                    )
                                     reanalyze_paper(message["url"], selected_prompt_reanalyze)
 
 
@@ -515,10 +531,7 @@ if __name__ == "__main__":
 
     # 配置Streamlit页面
     st.set_page_config(
-        page_title="SmartPaper",
-        page_icon="📄",
-        layout="wide",
-        initial_sidebar_state="expanded"
+        page_title="SmartPaper", page_icon="📄", layout="wide", initial_sidebar_state="expanded"
     )
 
     # 运行主函数

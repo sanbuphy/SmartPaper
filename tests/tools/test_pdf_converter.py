@@ -11,7 +11,7 @@ from openai import OpenAI
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.tools.pdf_converter import PDFConverter
+from utils.pdf_converter import PDFConverter
 
 
 @pytest.fixture
