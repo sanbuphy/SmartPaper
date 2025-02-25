@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Generator
 import yaml
 from pathlib import Path
 
@@ -75,7 +75,7 @@ class SmartPaper:
 
             # 根据模式处理
             if mode == "prompt":
-                analysis = self.processor.process(result["text_content"], prompt_name)
+                analysis = self.processor.process_with_content(result["text_content"], prompt_name)
             else:
                 analysis = self.agent.analyze(result["text_content"])
 
@@ -137,16 +137,20 @@ class SmartPaper:
             result = self.converter.convert_url(url, description=description)
             logger.info("PDF转换完成，开始分析")
 
+            # 获取PDF内容
+            text_content = result["text_content"]
+            metadata = result["metadata"]
+            
             # 根据模式处理
             if mode == "prompt":
-                analysis = self.processor.process(result["text_content"], prompt_name)
+                analysis = self.processor.process_with_content(text_content, prompt_name)
             else:
-                analysis = self.agent.analyze(result["text_content"])
+                analysis = self.agent.analyze(text_content)
             logger.info(f"分析完成，使用模式: {mode}")
 
             # 格式化输出
             output = self.output_formatter.format(
-                content=analysis, metadata=result["metadata"], format=self.output_format
+                content=analysis, metadata=metadata, format=self.output_format
             )
 
             return output
@@ -154,6 +158,60 @@ class SmartPaper:
         except Exception as e:
             raise Exception(f"处理论文URL失败: {str(e)}")
 
+    def process_paper_url_stream(
+        self, url: str, mode: str = "prompt", prompt_name: str = None, description: str = None
+    ) -> Generator[str, None, None]:
+        """流式处理论文URL
+
+        Args:
+            url (str): 论文URL
+            mode (str): 处理模式 ('prompt' 或 'agent')
+            prompt_name (str, optional): 提示词名称
+            description (str, optional): 论文描述
+
+        Yields:
+            str: 流式输出的文本片段
+            
+        Raises:
+            Exception: 当处理失败时抛出异常
+        """
+        try:
+            # 打印 metainfo 信息
+            yield "✨ 元数据信息 ✨\n\n"
+            yield f"📄 处理URL: {url}\n\n"   
+            yield f"🔍 处理模式: {mode}\n\n"
+            yield f"💡 提示词模板: {prompt_name if prompt_name else '默认'}\n\n"
+            yield f"📝 描述信息: {description if description else '无'}\n\n"
+            # 下载并转换PDF
+            logger.info(f"开始流式处理论文URL: {url}")
+            yield "🚀 正在下载并转换PDF...\n\n"
+            
+            result = self.converter.convert_url(url, description=description)
+            logger.info("PDF转换完成，开始流式分析")
+            yield "✅ PDF转换完成，开始分析...\n\n"
+            
+            # 获取PDF内容
+            text_content = result["text_content"]
+            
+            # 根据模式处理
+            if mode == "prompt":
+                yield "使用提示词模式进行分析...\n"
+                # 使用流式接口处理
+                for chunk in self.processor.process_stream_with_content(text_content, prompt_name):
+                    yield chunk
+            else:
+                yield "使用智能代理模式进行分析...\n"
+                # 使用agent的流式接口
+                for chunk in self.agent.analyze_stream(text_content):
+                    yield chunk
+                
+            logger.info(f"流式分析完成，使用模式: {mode}")
+
+        except Exception as e:
+            error_msg = f"流式处理论文URL失败: {str(e)}"
+            logger.error(error_msg)
+            yield f"错误: {error_msg}"
+            raise Exception(error_msg)
     def set_api_key(self, api_key: str):
         """设置API密钥
 

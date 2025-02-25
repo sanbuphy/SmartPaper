@@ -1,5 +1,4 @@
 from typing import Dict, Optional, Generator, List
-from langchain_community.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage, BaseMessage
 from ..prompts.prompt_library import get_prompt
 from ..utils.llm_adapter import create_llm_adapter
@@ -21,11 +20,11 @@ class PaperProcessor:
         self.max_requests = config["llm"].get("max_requests", 10)
         logger.info(f"初始化PaperProcessor完成，使用模型: {config['llm']['provider']}")
 
-    def process(self, text: str, prompt_name: Optional[str] = None) -> Dict:
-        """使用提示词处理文本
+    def process_with_content(self, text: str, prompt_name: Optional[str] = None) -> Dict:
+        """使用提示词处理已获取的文本内容
 
         Args:
-            text (str): 要处理的文本
+            text (str): 要处理的文本内容
             prompt_name (Optional[str]): 提示词名称
 
         Returns:
@@ -77,13 +76,13 @@ class PaperProcessor:
         except Exception as e:
             raise Exception(f"LLM流式请求失败: {str(e)}")
 
-    def process_stream(
+    def process_stream_with_content(
         self, text: str, prompt_name: Optional[str] = None
     ) -> Generator[str, None, None]:
-        """使用提示词流式处理文本
+        """使用提示词流式处理已获取的文本内容
 
         Args:
-            text (str): 要处理的文本
+            text (str): 要处理的文本内容
             prompt_name (Optional[str]): 提示词名称
 
         Yields:

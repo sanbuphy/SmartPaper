@@ -74,6 +74,54 @@ python main.py https://arxiv.org/pdf/2312.12456.pdf -p coolpapaers
 python main.py -p yuanbao
 ```
 
+#### 命令行工具详解
+
+项目提供了两种命令行工具，满足不同的使用需求：
+
+1. **标准命令行工具** (`cli_get_prompt_mode_paper.py`)
+   - 一次性分析论文并输出结果
+   - 使用方法：
+     ```bash
+     python cli_get_prompt_mode_paper.py [论文URL] --prompt [提示词模板名称]
+     ```
+   - 特点：
+     - 简单直观，适合快速分析
+     - 结果保存为Markdown文件
+
+2. **流式命令行工具** (`cli_get_prompt_mode_paper_stream.py`)
+   - 实时流式输出分析结果
+   - 使用方法：
+     ```bash
+     python cli_get_prompt_mode_paper_stream.py [论文URL] --prompt [提示词模板名称]
+     ```
+   - 特点：
+     - 实时显示分析进度
+     - 适合长文档分析，可以边分析边查看结果
+
+#### 图形界面使用
+
+项目提供了基于Streamlit的图形界面，方便用户交互：
+
+1. **启动图形界面**:
+   ```bash
+   streamlit run gui_streamlit_get_prompt_mode_paper.py
+   ```
+
+2. **图形界面功能**:
+   - 选择提示词模板
+   - 输入论文URL（支持arXiv格式自动转换）
+   - 实时显示分析进度
+   - 下载分析结果
+   - 重新分析功能
+   - 历史分析记录查看
+
+3. **使用流程**:
+   - 在侧边栏选择提示词模板
+   - 输入论文URL
+   - 点击"开始分析"按钮
+   - 等待分析完成，可实时查看进度
+   - 下载或重新分析结果
+
 #### 提示词模板
 
 当前支持的提示词模板:
