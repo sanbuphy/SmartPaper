@@ -4,7 +4,8 @@ import argparse
 import yaml
 from loguru import logger
 from src.core.reader import SmartPaper
-from src.prompts.prompt_library import list_prompts
+from core.prompt_library import list_prompts
+
 
 def load_config():
     """加载配置文件"""
@@ -65,7 +66,11 @@ def main():
         "url", nargs="?", default="https://arxiv.org/pdf/2305.12002", help="论文URL"
     )
     parser.add_argument(
-        "--prompt", "-p", default="coolpapaers", choices=list_prompts().keys(), help="提示词模板名称"
+        "--prompt",
+        "-p",
+        default="coolpapaers",
+        choices=list_prompts().keys(),
+        help="提示词模板名称",
     )
 
     args = parser.parse_args()

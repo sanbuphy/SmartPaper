@@ -3,7 +3,7 @@ import sys
 import argparse
 from loguru import logger
 from src.core.reader import SmartPaper
-from src.prompts.prompt_library import list_prompts
+from core.prompt_library import list_prompts
 
 
 def process_paper(url: str, prompt_name: str = "yuanbao"):

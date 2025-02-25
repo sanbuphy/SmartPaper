@@ -14,7 +14,7 @@ from loguru import logger
 import yaml
 import re
 from src.core.reader import SmartPaper
-from src.prompts.prompt_library import list_prompts
+from core.prompt_library import list_prompts
 from typing import List, Dict
 import sys
 import uuid  # 用于生成用户唯一ID

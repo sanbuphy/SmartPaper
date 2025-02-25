@@ -8,7 +8,7 @@ import pytest
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from utils.add_md_image_description import add_md_image_description
+from src.utils.add_md_image_description import add_md_image_description
 
 
 def test_add_image_description():

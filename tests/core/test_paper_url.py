@@ -9,7 +9,7 @@ import yaml
 from typing import Dict
 
 from src.core.reader import SmartPaper
-from src.prompts.prompt_library import list_prompts
+from src.core.prompt_library import list_prompts
 
 
 @pytest.fixture

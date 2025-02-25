@@ -10,7 +10,7 @@ import pytest
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.tools.vlm_function import (
+from src.tools.image_to_text import (
     describe_image,
     save_result_to_file,
     extract_text_from_image,

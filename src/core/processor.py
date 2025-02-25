@@ -1,7 +1,7 @@
 from typing import Dict, Optional, Generator, List
 from langchain.schema import HumanMessage, SystemMessage, BaseMessage
-from ..prompts.prompt_library import get_prompt
-from ..utils.llm_adapter import create_llm_adapter
+from src.core.prompt_library import get_prompt
+from src.utils.llm_adapter import create_llm_adapter
 from loguru import logger
 
 

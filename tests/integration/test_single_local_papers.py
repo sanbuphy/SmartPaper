@@ -14,7 +14,7 @@ from typing import Dict, List
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.core.reader import SmartPaper
-from src.prompts.prompt_library import list_prompts
+from src.core.prompt_library import list_prompts
 
 
 def test_single_paper(paper_path: str, mode: str = "agent", prompt_name: str = None):

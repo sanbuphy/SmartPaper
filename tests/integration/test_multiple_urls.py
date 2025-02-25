@@ -19,7 +19,6 @@ import re
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.core.reader import SmartPaper
-from src.prompts.prompt_library import list_prompts
 
 
 def test_urls(urls: List[Dict], mode: str = "agent", prompt_name: str = None):
