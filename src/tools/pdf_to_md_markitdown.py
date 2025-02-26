@@ -43,7 +43,7 @@ from pathlib import Path
 import tempfile
 import requests
 import mimetypes
-from markitdown import MarkItDown
+from markdown_it import MarkdownIt
 from loguru import logger
 import time
 
@@ -61,9 +61,9 @@ class MarkdownConverter:
         """
         # 根据是否提供LLM客户端来初始化MarkItDown
         if llm_client and llm_model:
-            self.md = MarkItDown(llm_client=llm_client, llm_model=llm_model)
+            self.md = MarkdownIt(llm_client=llm_client, llm_model=llm_model)
         else:
-            self.md = MarkItDown()
+            self.md = MarkdownIt()
         logger.info("初始化MarkdownConverter完成")
 
         # 设置配置信息
