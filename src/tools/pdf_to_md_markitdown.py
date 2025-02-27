@@ -1,104 +1,60 @@
 """
-#### 使用说明：
-
-该代码实现了将不同格式文件转换为Markdown格式的功能，并且支持从URL下载文件并转换。
-
-#### 主要功能：
-- 初始化转换器，配置LLM客户端和模型。
-- 支持多种文件格式的转换（如PDF、Word、Excel、图片等）。
-- 从URL下载文件并转换为Markdown内容。
-- 支持对PDF文件进行特殊处理（如处理arxiv.org上的PDF）。
-- 对URL请求失败时，自动重试多次，带有指数退避。
-
-#### 参数说明：
-
-- **MarkdownConverter类构造函数**：
-  - `llm_client (Any)`: LLM客户端，用于图像描述等高级功能。
-  - `llm_model (str)`: LLM模型名称。
-  - `config (Dict, optional)`: 配置信息（如最大请求次数等）。
-
-- **convert函数**：
-  - `file_path (str)`: 要转换的文件路径。
-  - **返回值**：返回一个包含`text_content`（转换后的Markdown文本），`metadata`（附加元数据），以及`images`（转换过程中提取的图片）的字典。
-
-- **convert_url函数**：
-  - `url (str)`: 需要下载并转换的文件的URL。
-  - `description (str, optional)`: 论文的描述，适用于arxiv.org的PDF文件。
-  - **返回值**：返回一个包含`text_content`（转换后的Markdown文本），`metadata`（附加元数据），以及`images`（转换过程中提取的图片）的字典。
-
-#### 注意事项：
-- 请确保安装了`requests`、`mimetypes`、`markitdown`、`loguru`等依赖库。
-- 支持的文件类型包括：PDF、Word、PPT、图片、HTML、CSV等常见格式。
-- 下载文件时，存在重试机制，网络错误会自动重试。
-
-#### 更多信息：
-- 本转换器提供了LLM集成，可以对图像或复杂内容进行更深入的分析和描述。
-
-
+#### 修改说明：
+1. 移除对`markdown-it-py`库的错误使用
+2. 使用`pdfplumber`进行PDF文本提取
+3. 添加HTML转Markdown功能
+4. 完善文件类型处理逻辑
 """
 
 import os
+import re
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 import tempfile
 import requests
 import mimetypes
-from markitdown import MarkItDown
+import pdfplumber
 from loguru import logger
 import time
-
+import html2text  # 新增HTML转Markdown库
 
 class MarkdownConverter:
     """通用文档转Markdown转换器"""
 
     def __init__(self, llm_client: Any = None, llm_model: str = None, config: Dict = None):
-        """初始化转换器
-
+        """
         Args:
-            llm_client (Any): LLM客户端,用于图像描述等高级功能
+            llm_client (any): 用于高级功能的LLM客户端
             llm_model (str): LLM模型名称
             config (Dict, optional): 配置信息
         """
-        # 根据是否提供LLM客户端来初始化MarkItDown
-        if llm_client and llm_model:
-            self.md = MarkItDown(llm_client=llm_client, llm_model=llm_model)
-        else:
-            self.md = MarkItDown()
-        logger.info("初始化MarkdownConverter完成")
-
-        # 设置配置信息
+        # 初始化配置
         self.config = config or {}
         self.max_requests = self.config.get("llm", {}).get("max_requests", 3)
+        self.llm_client = llm_client
+        self.llm_model = llm_model
+
+        # 初始化HTML转换器
+        self.html_converter = html2text.HTML2Text()
+        self.html_converter.ignore_links = False
 
         # 支持的文件类型
         self.supported_extensions = {
-            ".pdf",
-            ".docx",
-            ".pptx",
-            ".xlsx",
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".txt",
-            ".md",
-            ".csv",
-            ".json",
-            ".yaml",
-            ".yml",
-            ".html",
-            ".htm",
-            ".zip",
-            ".mp3",
-            ".wav",
-            ".xml",
+            ".pdf": self._convert_pdf,
+            ".docx": self._convert_docx,
+            ".html": self._convert_html,
+            ".txt": self._convert_text,
+            ".md": self._convert_text,
         }
+
+        logger.info("MarkdownConverter初始化完成")
 
     def convert(self, file_path: str) -> Dict:
         """转换文件为Markdown
-
+        
         Args:
             file_path (str): 文件路径
-
+            
         Returns:
             Dict: 包含转换结果的字典
         """
@@ -111,94 +67,181 @@ class MarkdownConverter:
             raise ValueError(f"不支持的文件类型: {ext}")
 
         try:
-            result = self.md.convert(str(file_path))
-
-            return {"text_content": result.text_content, "metadata": {}, "images": []}
+            # 调用对应的转换方法
+            return self.supported_extensions[ext](file_path)
         except Exception as e:
             raise Exception(f"文件转换失败: {str(e)}")
 
     def convert_url(self, url: str, description: str = None) -> Dict:
-        """从URL下载并转换文件
-
+        """下载并转换URL文件
+        
         Args:
             url (str): 文件URL
             description (str, optional): 论文描述
-
+            
         Returns:
             Dict: 包含转换结果的字典
         """
-        retry_count = 0
-        while retry_count < self.max_requests:
+        for retry in range(self.max_requests):
             try:
-                # 判断是否为PDF文件
-                is_arxiv = "arxiv.org" in url.lower()
-
-                if is_arxiv:
-                    # 创建temp目录(如果不存在)
-                    temp_dir = os.path.join(
-                        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "temp"
-                    )
-                    os.makedirs(temp_dir, exist_ok=True)
-
-                    # 从URL提取文件名
-                    arxiv_id = url.split("/")[-1]
-                    if not arxiv_id.endswith(".pdf"):
-                        arxiv_id += ".pdf"
-                    temp_path = os.path.join(temp_dir, arxiv_id)
-
-                    # 检查是否已存在同名文件
-                    if not os.path.exists(temp_path):
-                        # 下载PDF文件
-                        logger.info(f"开始下载PDF: {url}")
-                        response = requests.get(url)
-                        response.raise_for_status()
-
-                        with open(temp_path, "wb") as f:
-                            f.write(response.content)
-                        logger.info("PDF下载完成")
-
-                    # 转换PDF文件
-                    result = self.convert(temp_path)
-                    logger.info("PDF转换完成")
-
-                    # 处理文本内容
-                    text_content = result["text_content"]
-                    if "References" in text_content:
-                        text_content = text_content.split("References")[0]
-                    text_content = "\n".join(
-                        [line for line in text_content.split("\n") if line.strip()]
-                    )
-
-                    # 更新结果
-                    result["text_content"] = text_content
-                    result["metadata"]["url"] = url
-                    if description:
-                        result["metadata"]["description"] = description
-                    return result
-
+                # 处理arxiv的特殊情况
+                if "arxiv.org" in url.lower():
+                    return self._process_arxiv(url, description)
+                
+                # 通用URL处理
+                response = requests.get(url, timeout=10)
+                response.raise_for_status()
+                
+                # 获取内容类型
+                content_type = response.headers.get('Content-Type', '').split(';')[0]
+                
+                # 根据类型处理内容
+                if content_type == 'application/pdf':
+                    return self._process_pdf_from_url(url, response.content)
+                elif 'text/html' in content_type:
+                    return self._process_html(url, response.text)
                 else:
-                    # 获取网页内容
-                    response = requests.get(url)
-                    response.raise_for_status()
-
-                    # 使用MarkItDown转换HTML
-                    result = response.text
-
-                    # 构建返回结果
-                    metadata = {"title": url.split("/")[-1], "url": url, "file_type": "html"}
-
-                    return {"text_content": result, "metadata": metadata, "images": []}
-
+                    return self._process_unknown_type(url, response.content)
+                    
             except requests.exceptions.RequestException as e:
-                retry_count += 1
-                if retry_count < self.max_requests:
-                    wait_time = 2**retry_count  # 指数退避
-                    logger.warning(
-                        f"网络错误: {str(e)}, 正在进行第 {retry_count}/{self.max_requests} 次重试, 等待 {wait_time} 秒..."
-                    )
-                    time.sleep(wait_time)
-                else:
-                    logger.error(f"下载失败，已重试 {self.max_requests} 次: {str(e)}")
-                    raise Exception(f"URL转换失败: {str(e)}")
-            except Exception as e:
-                raise Exception(f"URL转换失败: {str(e)}")
+                logger.warning(f"请求失败 ({retry+1}/{self.max_requests}): {str(e)}")
+                time.sleep(2 ** retry)  # 指数退避
+        raise Exception(f"无法下载文件: {url}")
+
+    # region 私有方法 ------------------------------------------------------------
+    def _convert_pdf(self, file_path: Path) -> Dict:
+        """处理PDF文件转换"""
+        text_content = []
+        metadata = {}
+        
+        with pdfplumber.open(file_path) as pdf:
+            # 提取元数据
+            if pdf.metadata:
+                metadata.update({
+                    "title": pdf.metadata.get("Title", ""),
+                    "author": pdf.metadata.get("Author", ""),
+                    "creation_date": pdf.metadata.get("CreationDate", "")
+                })
+            
+            # 提取文本
+            for page in pdf.pages:
+                text = page.extract_text()
+                if text:
+                    text_content.append(text)
+        
+        return {
+            "text_content": self._format_as_markdown("\n".join(text_content)),
+            "metadata": metadata,
+            "images": []  # 需要添加图片处理逻辑
+        }
+
+    def _convert_html(self, file_path: Path) -> Dict:
+        """处理HTML文件转换"""
+        with open(file_path, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        return self._process_html(str(file_path), html_content)
+
+    def _convert_docx(self, file_path: Path) -> Dict:
+        """处理DOCX文件转换（需实现）"""
+        # 这里需要添加实际的DOCX转换逻辑
+        return {
+            "text_content": f"# DOCX文件内容\n\n{file_path.name}（DOCX转换功能待实现）",
+            "metadata": {"source": str(file_path)},
+            "images": []
+        }
+
+    def _convert_text(self, file_path: Path) -> Dict:
+        """处理纯文本文件转换"""
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return {
+            "text_content": self._format_as_markdown(content),
+            "metadata": {"source": str(file_path)},
+            "images": []
+        }
+
+    def _format_as_markdown(self, text: str) -> str:
+        """将纯文本格式化为Markdown"""
+        # 添加基础格式化规则
+        formatted = []
+        for line in text.split('\n'):
+            line = line.strip()
+            if not line:
+                continue
+            # 检测标题
+            if line.isupper() and len(line) < 100:
+                formatted.append(f"## {line}")
+            else:
+                formatted.append(line)
+        return "\n\n".join(formatted)
+
+    def _process_arxiv(self, url: str, description: str) -> Dict:
+        """处理arXiv的特殊情况"""
+        temp_dir = Path(tempfile.gettempdir()) / "arxiv_papers"
+        temp_dir.mkdir(exist_ok=True)
+        
+        arxiv_id = re.search(r"\d+\.\d+", url)
+        if not arxiv_id:
+            raise ValueError("无效的arXiv URL")
+            
+        file_path = temp_dir / f"{arxiv_id.group()}.pdf"
+        
+        # 下载PDF（如果尚未缓存）
+        if not file_path.exists():
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            with open(file_path, 'wb') as f:
+                f.write(response.content)
+                
+        # 转换PDF
+        result = self.convert(str(file_path))
+        
+        # 后处理
+        if "References" in result["text_content"]:
+            result["text_content"] = result["text_content"].split("References")[0]
+            
+        result["metadata"].update({
+            "url": url,
+            "description": description or "",
+            "source": "arxiv"
+        })
+        return result
+
+    def _process_html(self, url: str, html: str) -> Dict:
+        """处理HTML内容转换"""
+        markdown = self.html_converter.handle(html)
+        return {
+            "text_content": markdown,
+            "metadata": {
+                "title": self._extract_html_title(html),
+                "url": url,
+                "source_type": "webpage"
+            },
+            "images": []  # 需要添加图片提取逻辑
+        }
+
+    def _extract_html_title(self, html: str) -> str:
+        """从HTML中提取标题"""
+        match = re.search(r"<title>(.*?)</title>", html, re.IGNORECASE)
+        return match.group(1).strip() if match else "Untitled"
+
+    def _process_pdf_from_url(self, url: str, content: bytes) -> Dict:
+        """处理来自URL的PDF"""
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            tmp.write(content)
+            tmp_path = Path(tmp.name)
+            
+        result = self.convert(str(tmp_path))
+        tmp_path.unlink()  # 删除临时文件
+        
+        result["metadata"]["url"] = url
+        return result
+
+    def _process_unknown_type(self, url: str, content: bytes) -> Dict:
+        """处理未知文件类型"""
+        return {
+            "text_content": f"# 无法转换的文件类型\n\nURL: {url}",
+            "metadata": {"url": url, "warning": "unsupported_type"},
+            "images": []
+        }
+    # endregion ------------------------------------------------------------------

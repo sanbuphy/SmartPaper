@@ -19,6 +19,8 @@ arxiv>=2.0.0
 tqdm>=4.66.1
 markitdown
 loguru
+pdfplumber
+html2text
 
 # 开发依赖
 pre-commit>=3.6.2
