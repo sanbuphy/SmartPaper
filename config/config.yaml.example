@@ -2,57 +2,74 @@
 llm:
   provider: "openai_deepseek"  # 可选的提供商包括: openai，openai_deepseek，openai_siliconflow，openai_kimi，openai_doubao，zhipuai
   max_requests: 10  # 最大请求次数
+  default_model_index: 0  # 默认使用第一个模型
   openai:
     api_key: "your-api-key"
     base_url: "https://api.openai.com/v1"  # 可选，用于自定义API端点
-    model: "gpt-4-1106-preview"
+    models:
+      - "gpt-4-1106-preview"
+      - "gpt-4"
+      - "gpt-3.5-turbo"
     temperature: 0.7
     max_tokens: 8192
   openai_deepseek:
     api_key: "your-api-key"
     base_url: "https://api.deepseek.com/v1"
-    model: "deepseek-chat"
+    models:
+      - "deepseek-chat"
+      - "deepseek-coder"
     temperature: 0.7
     max_tokens: 8192
   openai_siliconflow:
     api_key: "your-api-key"
     base_url: "https://api.siliconflow.com/v1"
-    model: "Qwen/Qwen2.5-72B-Instruct"
+    models:
+      - "Qwen/Qwen2.5-72B-Instruct"
+      - "Qwen/Qwen2.5-7B-Instruct"
     temperature: 0.7
     max_tokens: 4096
   openai_kimi:
     api_key: "your-api-key"
     base_url: "https://api.moonshot.cn/v1"
-    model: "moonshot-v1-8k"
+    models:
+      - "moonshot-v1-8k"
+      - "moonshot-v1-32k"
     temperature: 0.7
     max_tokens: 8192
   openai_aistudio:
     api_key: "your-api-key"
     base_url: "https://api.baidu.com/v1"
-    model: "model_name"
+    models:
+      - "ernie-bot-4"
+      - "ernie-bot"
     temperature: 0.7
     max_tokens: 4096
   openai_doubao:
     api_key: "your-api-key"
     base_url: "https://ark.cn-beijing.volces.com/api/v3"
-    model: "model_name"
+    models:
+      - "doubao-v1"
     temperature: 0.7
     max_tokens: 4096
   zhipuai:
     api_key: "your-zhipu-api-key"
-    model: "glm-4"
+    models:
+      - "glm-4"
+      - "glm-3-turbo"
     temperature: 0.7
     max_tokens: 8192
   ai_studio:
     api_key: "your-api-key"
     base_url: "https://aistudio.baidu.com/llm/lmapi/v3"
-    model: "deepseek-r1"
+    models:
+      - "deepseek-r1"
     temperature: 0.7
     max_tokens: 8192
   ai_studio_fast_deploy:
     api_key: "your-api-key"
     base_url: "https://api-f6f9v9xdo8n0j2yd.aistudio-app.com/v1"
-    model: "deepseek-r1:32b"
+    models:
+      - "deepseek-r1:32b"
     temperature: 0.7
     max_tokens: 8192
 
