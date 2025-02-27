@@ -1,3 +1,7 @@
+"""
+测试paddlex库构建的paddle_layout_detection.py文件
+"""
+
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
