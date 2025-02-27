@@ -232,3 +232,18 @@ SKIP=flake8 git commit -m "your commit message"
 
 - `.pre-commit-config.yaml`：pre-commit 主配置
 - `.markdownlint.yaml`：markdown 格式化规则
+
+
+## Thanks to Contributors
+
+非常感谢以下贡献者为项目作出的贡献！：
+
+- [散步](https://github.com/sanbuphy)  (Datawhale成员)
+
+
+
+<div align=center style="margin-top: 30px;">
+  <a href="https://github.com/datawhalechina/self-llm/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=sanbuphy/SmartPaper" />
+  </a>
+</div>
