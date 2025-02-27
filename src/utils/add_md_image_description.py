@@ -42,7 +42,7 @@
 import os  # 用于文件和目录操作
 import re  # 用于正则表达式处理
 from pathlib import Path  # 用于跨平台的路径操作
-from src.tools.image_to_text import describe_image
+from tools.everything_to_text.image_to_text import describe_image
 
 
 def read_markdown_files(path):
