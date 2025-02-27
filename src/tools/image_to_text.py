@@ -272,7 +272,7 @@ def describe_image(
     api_key: str = None,
     model: str = "Qwen/Qwen2-VL-72B-Instruct",
     prompt: str = None,
-    description_prompt_path: str = "test_vlm_function_description_prompt.md",
+    description_prompt_path: str = None,
 ) -> str:
     """
     描述图像的内容。
@@ -307,7 +307,7 @@ def extract_text_from_image(
     api_key: str = None,
     model: str = "Qwen/Qwen2-VL-72B-Instruct",
     prompt: str = None,
-    ocr_prompt_path: str = "test_vlm_function_ocr_prompt.md",
+    ocr_prompt_path: str = None,
 ) -> str:
     """
     从图像中提取文本内容（OCR）。

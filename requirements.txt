@@ -37,3 +37,8 @@ modelscope
 # TODO 有关magic-pdf的转换的接口支持
 # magic-pdf[full]
 # --extra-index-url https://wheels.myhloli.com
+
+# paddle 部分的依赖
+# 看src/tools/paddlepaddle/paddle_layout_detection.py内说明
+
+numpy==1.24.4
