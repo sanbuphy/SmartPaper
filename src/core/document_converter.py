@@ -4,7 +4,7 @@
 通过注册机制，可以灵活地添加新的转换器。
 """
 
-from typing import Callable, Dict, Any, Optional
+from typing import Callable, Dict, Any, Optional, Union
 from pathlib import Path
 
 
@@ -22,7 +22,7 @@ class DocumentConverter:
         cls._converters[file_type.lower()] = converter_func
 
     @classmethod
-    def convert_to_text(cls, file_path: str | Path, **kwargs) -> str:
+    def convert_to_text(cls, file_path: Union[str, Path], **kwargs) -> str:
         """将文档转换为文本
 
         Args:
@@ -49,7 +49,7 @@ class DocumentConverter:
 
 
 # 创建一个便捷的函数接口
-def convert_to_text(file_path: str | Path, **kwargs) -> str:
+def convert_to_text(file_path: Union[str, Path], **kwargs) -> str:
     """便捷的文档转换函数
 
     Args:

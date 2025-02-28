@@ -3,10 +3,10 @@ from typing import Dict
 import yaml
 import logging
 import os
-
+from typing import Union, Optional
 
 class PromptLibrary:
-    def __init__(self, prompt_file: str | None = None):
+    def __init__(self, prompt_file: Optional[str] = None):
         """初始化提示词库
 
         Args:
