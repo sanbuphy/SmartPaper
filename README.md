@@ -35,6 +35,15 @@ SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(Op
 pip install -r requirements.txt
 ```
 
+#### 1.1 解决Python 3.10 以下markitdown兼容性问题（由于官方源码不兼容python3.10以下，此版本为官方源码修改后的兼容版本）
+```bash
+# 卸载之前安装的markitdown
+pip uninstall markitdown
+git clone https://github.com/jingsongliujing/markitdown.git
+cd markitdown
+pip install -e packages/markitdown
+```
+
 ### 2. 配置
 
 1. 复制并修改配置文件:
@@ -240,6 +249,7 @@ SKIP=flake8 git commit -m "your commit message"
 非常感谢以下贡献者为项目作出的贡献！：
 
 - [散步](https://github.com/sanbuphy)  (Datawhale成员)
+- [jingsongliujing](https://github.com/jingsongliujing)
 
 <div align=center style="margin-top: 30px;">
   <a href="https://github.com/datawhalechina/self-llm/graphs/contributors">
