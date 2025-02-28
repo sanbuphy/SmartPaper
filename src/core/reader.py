@@ -13,11 +13,11 @@ from loguru import logger
 class SmartPaper:
     """论文阅读和存档工具"""
 
-    def __init__(self, config_file: str | None = None, output_format: str = "markdown"):
+    def __init__(self, config_file: Optional[str] = None, output_format: str = "markdown"):
         """初始化SmartPaper实例
 
         Args:
-            config_file (str, optional): 配置文件路径
+            config_file (Optional[str], optional): 配置文件路径
             output_format (str, optional): 输出格式 (markdown/csv/folder)
         """
         # 加载配置
@@ -57,13 +57,13 @@ class SmartPaper:
         except Exception as e:
             raise Exception(f"加载配置文件失败: {str(e)}")
 
-    def process_paper(self, file_path: str, mode: str = "prompt", prompt_name: str = None) -> Dict:
+    def process_paper(self, file_path: str, mode: str = "prompt", prompt_name: Optional[str] = None) -> Dict:
         """处理单个论文文件
 
         Args:
             file_path (str): 论文文件路径
             mode (str): 处理模式 ('prompt' 或 'agent')
-            prompt_name (str, optional): 提示词名称
+            prompt_name (Optional[str], optional): 提示词名称
 
         Returns:
             Dict: 处理结果
@@ -90,14 +90,14 @@ class SmartPaper:
             raise Exception(f"处理论文失败: {str(e)}")
 
     def process_directory(
-        self, dir_path: str, mode: str = "prompt", prompt_name: str = None
+        self, dir_path: str, mode: str = "prompt", prompt_name: Optional[str] = None
     ) -> List[Dict]:
         """处理目录中的所有论文
 
         Args:
             dir_path (str): 目录路径
             mode (str): 处理模式 ('prompt' 或 'agent')
-            prompt_name (str, optional): 提示词名称
+            prompt_name (Optional[str], optional): 提示词名称
 
         Returns:
             List[Dict]: 处理结果列表
@@ -118,15 +118,15 @@ class SmartPaper:
         return results
 
     def process_paper_url(
-        self, url: str, mode: str = "prompt", prompt_name: str = None, description: str = None
+        self, url: str, mode: str = "prompt", prompt_name: Optional[str] = None, description: Optional[str] = None
     ) -> Dict:
         """处理论文URL
 
         Args:
             url (str): 论文URL
             mode (str): 处理模式 ('prompt' 或 'agent')
-            prompt_name (str, optional): 提示词名称
-            description (str, optional): 论文描述
+            prompt_name (Optional[str], optional): 提示词名称
+            description (Optional[str], optional): 论文描述
 
         Returns:
             Dict: 处理结果
@@ -159,7 +159,7 @@ class SmartPaper:
             raise Exception(f"处理论文URL失败: {str(e)}")
 
     def process_paper_url_stream(
-        self, url: str, mode: str = "prompt", prompt_name: str = None, description: str = None
+        self, url: str, mode: str = "prompt", prompt_name: Optional[str] = None, description: Optional[str] = None
     ) -> Generator[str, None, None]:
         """流式处理论文URL
 
