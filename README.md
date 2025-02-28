@@ -243,7 +243,7 @@ SKIP=flake8 git commit -m "your commit message"
 - [筱可](https://github.com/li-xiu-qi) (datawhale应用发烧友)
 
 <div align=center style="margin-top: 30px;">
-  <a href="https://github.com/datawhalechina/self-llm/graphs/contributors">
+  <a href="https://github.com/sanbuphy/SmartPaper">
     <img src="https://contrib.rocks/image?repo=sanbuphy/SmartPaper" />
   </a>
 </div>
