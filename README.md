@@ -249,10 +249,11 @@ SKIP=flake8 git commit -m "your commit message"
 非常感谢以下贡献者为项目作出的贡献！：
 
 - [散步](https://github.com/sanbuphy)  (Datawhale成员)
+- [筱可](https://github.com/li-xiu-qi) (datawhale应用发烧友)
 - [jingsongliujing](https://github.com/jingsongliujing)
 
 <div align=center style="margin-top: 30px;">
-  <a href="https://github.com/datawhalechina/self-llm/graphs/contributors">
+  <a href="https://github.com/sanbuphy/SmartPaper">
     <img src="https://contrib.rocks/image?repo=sanbuphy/SmartPaper" />
   </a>
 </div>

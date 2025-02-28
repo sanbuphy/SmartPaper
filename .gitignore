@@ -49,4 +49,4 @@ config.yaml
 .DS_Store
 Thumbs.db
 config/config.yaml
-temp/*
+temp/
