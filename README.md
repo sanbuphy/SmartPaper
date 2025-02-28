@@ -2,6 +2,8 @@
 
 SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(OpenAI、Deepseek、Kimi、豆包、智谱等),可以自动分析论文内容并生成结构化的分析报告。
 
+**注：项目高速迭代中，API 变动较快，待架构稳定后会避免核心代码变动。**
+
 ## 功能特点
 
 - 支持多种 LLM 提供商:
@@ -232,3 +234,15 @@ SKIP=flake8 git commit -m "your commit message"
 
 - `.pre-commit-config.yaml`：pre-commit 主配置
 - `.markdownlint.yaml`：markdown 格式化规则
+
+## Thanks to Contributors
+
+非常感谢以下贡献者为项目作出的贡献！：
+
+- [散步](https://github.com/sanbuphy)  (Datawhale成员)
+
+<div align=center style="margin-top: 30px;">
+  <a href="https://github.com/datawhalechina/self-llm/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=sanbuphy/SmartPaper" />
+  </a>
+</div>

@@ -3,7 +3,7 @@ from typing import Dict, Optional, Any
 from pathlib import Path
 import tempfile
 import requests
-from src.tools.pdf_to_md_markitdown import MarkdownConverter
+from tools.everything_to_text.pdf_to_md_markitdown import MarkdownConverter
 
 
 class PDFConverter:

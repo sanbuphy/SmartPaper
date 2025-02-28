@@ -5,7 +5,7 @@ from pathlib import Path
 
 from src.core.llm_wrapper import LLMWrapper
 from src.core.agent import PaperAgent
-from src.tools.pdf_to_md_markitdown import MarkdownConverter
+from tools.everything_to_text.pdf_to_md_markitdown import MarkdownConverter
 from src.utils.output_formatter import OutputFormatter
 from loguru import logger
 
