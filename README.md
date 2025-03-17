@@ -4,6 +4,9 @@ SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(Op
 
 **注：项目高速迭代中，API 变动较快，待架构稳定后会避免核心代码变动。**
 
+## 在线体验地址
+[SmartPaper](https://aistudio.baidu.com/application/detail/68062)
+
 ## 功能特点
 
 - 支持多种 LLM 提供商:
