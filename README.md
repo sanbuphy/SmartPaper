@@ -193,6 +193,50 @@ python cli_get_prompt_mode_paper.py -p yuanbao
 - [配置文件使用说明](docs/config_yaml_guide.md) - 详细介绍配置文件结构、参数说明及配置注意事项
 - [文档转换器注册指南](docs/register_document_converter.md) - 介绍如何开发和注册自定义文档转换器
 
+## 前后端启动说明
+
+### 后端启动
+
+1. 进入SmartPaper目录:
+
+```bash
+cd SmartPaper
+```
+
+2. 安装依赖:
+
+```bash
+pip install -r requirements.txt
+```
+
+3. 启动后端服务:
+
+```bash
+run main.py
+```
+
+### 前端启动
+
+1. 进入frontend目录:
+
+```bash
+cd frontend
+```
+
+2. 安装依赖:
+
+```bash
+npm install
+```
+
+3. 启动开发服务器:
+
+```bash
+npm run dev
+```
+
+4. 前端服务将在本地启动，通常在 http://localhost:5173
+
 ## 注意事项
 
 1. API 密钥:
@@ -308,6 +352,8 @@ SKIP=flake8 git commit -m "your commit message"
 - [散步](https://github.com/sanbuphy)  (Datawhale成员)
 - [筱可](https://github.com/li-xiu-qi) (datawhale应用发烧友)
 - [jingsongliujing](https://github.com/jingsongliujing)
+- [冬灵](https://github.com/DM-llm)  (Datawhale成员)
+- [imagist](https://github.com/imagist13)  
 
 <div align=center style="margin-top: 30px;">
   <a href="https://github.com/sanbuphy/SmartPaper">
