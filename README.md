@@ -33,19 +33,28 @@ SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(Op
 
 ## 快速开始
 
-### 1. 安装依赖
+### 1. 克隆项目
+
+```bash
+# 克隆主仓库及其子模块
+git clone --recursive https://github.com/yourusername/SmartPaper.git
+cd SmartPaper
+```
+
+### 2. 安装依赖
 
 ```bash
 pip install -r requirements.txt
 ```
 
-#### 1.1 解决Python 3.10 以下markitdown兼容性问题（由于官方源码不兼容python3.10以下，此版本为官方源码修改后的兼容版本）
+#### 2.1 解决Python 3.10 以下markitdown兼容性问题（由于官方源码不兼容python3.10以下，此版本为官方源码修改后的兼容版本）
 ```bash
 # 卸载之前安装的markitdown
 pip uninstall markitdown
 git clone https://github.com/jingsongliujing/markitdown.git
 cd markitdown
 pip install -e packages/markitdown
+cd ..
 ```
 
 ### 2. 配置
