@@ -31,7 +31,7 @@ SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(Op
 - 请求次数限制保护
 - 支持自定义文档转换器（查看[文档转换器注册指南](docs/register_document_converter.md)）
 
-## 快速开始
+## 准备工作
 
 ### 1. 克隆项目
 
@@ -41,7 +41,7 @@ git clone --recursive https://github.com/yourusername/SmartPaper.git
 cd SmartPaper
 ```
 
-### 2. 安装依赖
+### 2. 安装后端依赖
 
 ```bash
 pip install -r requirements.txt
@@ -56,8 +56,20 @@ cd markitdown
 pip install -e packages/markitdown
 cd ..
 ```
+### 3.安装前端依赖
 
-### 2. 配置
+1. 进入frontend目录:
+
+```bash
+cd frontend
+```
+
+2. 安装依赖:
+
+```bash
+npm install
+```
+### 4. 配置
 
 1. 复制并修改配置文件:
 
@@ -76,9 +88,44 @@ cp config/config.yaml.example config/config.yaml
     max_tokens: 8192
 ```
 
-### 3. 使用方法
+## 项目启动
 
-#### 命令行使用
+### 后端启动
+
+1. 进入SmartPaper目录:
+
+```bash
+cd SmartPaper
+```
+
+2启动FastAPI后端服务:
+
+```bash
+python backend.py
+```
+
+服务将在 http://localhost:8000 启动，可以通过 http://localhost:8000/docs 访问API文档（暂无）。
+
+### 前端启动
+
+1. 进入前端目录:
+
+```bash
+cd frontend
+```
+
+
+2.启动开发服务器:
+
+```bash
+npm run dev
+```
+
+前端开发服务器将在 http://localhost:5173 启动，可以通过浏览器访问。
+
+
+
+## 命令行使用
 
 1. 查看帮助:
 
@@ -245,6 +292,7 @@ npm run dev
 ```
 
 4. 前端服务将在本地启动，通常在 http://localhost:5173
+
 
 ## 注意事项
 
