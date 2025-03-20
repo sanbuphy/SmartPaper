@@ -1,6 +1,12 @@
+"""
+测试pdf_to_md_fitz.py文件，用于测试pdf_extractor.py中的process_pdf函数
+"""
+
 import os
 import pytest
-from src.tools.everything_to_text.pdf_extractor import process_pdf
+
+from src.tools.everything_to_text.pdf_plumber_extractor import process_pdf
+
 
 def test_pdf_to_md_conversion():
     # 定义测试文件和输出路径
