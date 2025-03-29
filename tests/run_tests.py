@@ -11,16 +11,32 @@ SmartPaper测试运行脚本
     - 运行所有测试: python run_tests.py
     - 运行特定类别测试: python run_tests.py --category core
     - 运行特定测试文件: python run_tests.py --file test_paper_url.py
+    - 包含magic_pdf相关测试: python run_tests.py --include-magic-pdf
 """
 
 import os
 import sys
 import argparse
 import subprocess
+import re
 from pathlib import Path
 
 
-def get_test_files(base_dir, category=None, file_name=None):
+def check_is_magic_pdf_test(file_path):
+    """
+    检查文件是否为 magic_pdf 相关测试
+
+    Args:
+        file_path: 文件路径
+
+    Returns:
+        bool: 是否为 magic_pdf 相关测试
+    """
+    magic_pdf_tests = ["test_pdf_to_md_mineru.py"]
+    return os.path.basename(file_path) in magic_pdf_tests
+
+
+def get_test_files(base_dir, category=None, file_name=None, include_magic_pdf=False):
     """
     获取要运行的测试文件列表
 
@@ -28,6 +44,7 @@ def get_test_files(base_dir, category=None, file_name=None):
         base_dir: 测试基础目录
         category: 测试类别（core, tools, integration, utils）
         file_name: 指定的测试文件名
+        include_magic_pdf: 是否包含 magic_pdf 相关测试
 
     Returns:
         list: 测试文件路径列表
@@ -38,15 +55,37 @@ def get_test_files(base_dir, category=None, file_name=None):
         # 如果指定了具体文件，则在所有测试目录中查找该文件
         for root, _, files in os.walk(base_dir):
             if file_name in files:
-                test_files.append(os.path.join(root, file_name))
+                file_path = os.path.join(root, file_name)
+                # 如果不包含 magic_pdf 测试且该文件是 magic_pdf 测试，则跳过
+                if not include_magic_pdf and check_is_magic_pdf_test(file_path):
+                    continue
+                test_files.append(file_path)
     elif category:
         # 如果指定了类别，则运行该类别下的所有测试
         category_dir = os.path.join(base_dir, category)
         if os.path.exists(category_dir):
-            test_files.append(category_dir)
+            if include_magic_pdf:
+                test_files.append(category_dir)
+            else:
+                # 遍历目录，逐个添加非 magic_pdf 的测试文件
+                for root, _, files in os.walk(category_dir):
+                    for file in files:
+                        if file.startswith("test_") and file.endswith(".py"):
+                            file_path = os.path.join(root, file)
+                            if not check_is_magic_pdf_test(file_path):
+                                test_files.append(file_path)
     else:
         # 如果没有指定，运行所有测试
-        test_files.append(base_dir)
+        if include_magic_pdf:
+            test_files.append(base_dir)
+        else:
+            # 遍历所有测试目录，逐个添加非 magic_pdf 的测试文件
+            for root, _, files in os.walk(base_dir):
+                for file in files:
+                    if file.startswith("test_") and file.endswith(".py"):
+                        file_path = os.path.join(root, file)
+                        if not check_is_magic_pdf_test(file_path):
+                            test_files.append(file_path)
 
     return test_files
 
@@ -93,6 +132,9 @@ def main():
     )
     parser.add_argument("--file", help="要运行的特定测试文件名（例如：test_paper_url.py）")
     parser.add_argument("--verbose", "-v", action="store_true", help="显示详细输出")
+    parser.add_argument(
+        "--include-magic-pdf", action="store_true", help="包含 magic_pdf 相关测试（默认忽略）"
+    )
 
     args = parser.parse_args()
 
@@ -100,7 +142,7 @@ def main():
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     # 获取测试文件列表
-    test_paths = get_test_files(current_dir, args.category, args.file)
+    test_paths = get_test_files(current_dir, args.category, args.file, args.include_magic_pdf)
 
     # 运行测试
     success = run_tests(test_paths, args.verbose)

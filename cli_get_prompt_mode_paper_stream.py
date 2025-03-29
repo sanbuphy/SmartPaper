@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import yaml
+import traceback
 from loguru import logger
 from src.core.reader import SmartPaper
 from src.core.prompt_library import list_prompts
@@ -50,6 +51,8 @@ def process_paper(url: str, prompt_name: str = "yuanbao"):
 
     except Exception as e:
         logger.error(f"处理失败: {str(e)}")
+        # 打印完整的错误栈信息
+        traceback.print_exc()
         sys.exit(1)
 
 

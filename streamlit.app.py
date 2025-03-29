@@ -18,6 +18,7 @@ from src.core.prompt_library import list_prompts
 from typing import List, Dict
 import sys
 import uuid  # 用于生成用户唯一ID
+import traceback  # 用于打印完整的错误栈
 
 
 def validate_and_format_arxiv_url(url: str) -> str:
@@ -105,8 +106,13 @@ def process_paper(url: str, prompt_name: str = "yuanbao"):
         yield {"type": "final", "success": True, "file_path": output_file}
 
     except Exception as e:
-        logger.error(f"处理失败: {str(e)}", exc_info=True)
-        yield {"type": "final", "success": False, "error": str(e)}
+        error_stack = traceback.format_exc()
+        logger.error(f"处理失败: {str(e)}\n{error_stack}")
+        yield {
+            "type": "final",
+            "success": False,
+            "error": f"{str(e)}\n\n详细错误信息:\n{error_stack}",
+        }
 
 
 def reanalyze_paper(url: str, prompt_name: str):
@@ -417,12 +423,13 @@ def main():
         try:
             validated_url = validate_and_format_arxiv_url(paper_url)
         except ValueError as exc:
-            logger.error("用户输入无效 arXiv URL")
+            error_stack = traceback.format_exc()
+            logger.error(f"用户输入无效 arXiv URL\n{error_stack}")
             st.error(str(exc))
             st.session_state.messages.append(
                 {
                     "role": "论文分析助手",
-                    "content": f"错误: {exc}",
+                    "content": f"错误: {exc}\n\n详细错误信息:\n{error_stack}",
                     "url": paper_url,
                 }
             )

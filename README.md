@@ -26,6 +26,7 @@ SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(Op
   - 结构化文件夹 (开发中)
 - 可配置的提示词模板
 - 请求次数限制保护
+- 支持自定义文档转换器（查看[文档转换器注册指南](docs/register_document_converter.md)）
 
 ## 快速开始
 

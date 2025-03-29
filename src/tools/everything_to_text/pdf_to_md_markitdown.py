@@ -63,9 +63,9 @@ def markitdown_pdf2md(
     try:
         # 根据是否提供LLM客户端来初始化MarkItDown
         if llm_client and llm_model:
-            md = MarkItDown(llm_client=llm_client, llm_model=llm_model, ocr_enabled=ocr_enabled)
+            md = MarkItDown(llm_client=llm_client, llm_model=llm_model)
         else:
-            md = MarkItDown(ocr_enabled=ocr_enabled)
+            md = MarkItDown()
 
         result = md.convert(str(file_path))
         return {"text_content": result.text_content, "metadata": {}, "images": []}
