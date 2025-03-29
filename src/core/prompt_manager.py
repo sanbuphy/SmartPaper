@@ -5,6 +5,7 @@ import logging
 import os
 from typing import Union, Optional
 
+
 class PromptLibrary:
     def __init__(self, prompt_file: Optional[str] = None):
         """初始化提示词库

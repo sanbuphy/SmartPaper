@@ -16,15 +16,18 @@ SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(Op
 - 支持多种输入方式:
   - 单个 PDF 文件
   - PDF 文件夹批量处理
-  - 论文 URL
+  - 论文 URL（支持 arXiv 格式自动转换和验证）
 - 灵活的分析模式:
   - 单提示词模式: 使用预设的提示词模板进行分析
-  - Agent 模式: 智能对话式分析 (开发中)
+  - Agent 模式: 智能对话式分析
+- 多种交互方式:
+  - 命令行工具（标准模式和流式输出模式）
+  - 基于 Streamlit 的图形界面
 - 多种输出格式:
   - Markdown
   - CSV (开发中)
   - 结构化文件夹 (开发中)
-- 可配置的提示词模板
+- 可配置的提示词模板（支持 LLM 和 VLM）
 - 请求次数限制保护
 - 支持自定义文档转换器（查看[文档转换器注册指南](docs/register_document_converter.md)）
 
@@ -71,25 +74,25 @@ cp config/config.yaml.example config/config.yaml
 1. 查看帮助:
 
 ```bash
-python main.py -h
+python cli_get_prompt_mode_paper.py -h
 ```
 
 2. 使用默认提示词模板分析论文:
 
 ```bash
-python main.py https://arxiv.org/pdf/2312.12456.pdf
+python cli_get_prompt_mode_paper.py https://arxiv.org/pdf/2312.12456.pdf
 ```
 
 3. 指定提示词模板:
 
 ```bash
-python main.py https://arxiv.org/pdf/2312.12456.pdf -p coolpapaers
+python cli_get_prompt_mode_paper.py https://arxiv.org/pdf/2312.12456.pdf -p coolpapaers
 ```
 
 4. 不提供URL时会使用默认论文URL:
 
 ```bash
-python main.py -p yuanbao
+python cli_get_prompt_mode_paper.py -p yuanbao
 ```
 
 #### 命令行工具详解
@@ -131,10 +134,12 @@ python main.py -p yuanbao
    - 支持多种 LLM 提供商选择
    - 选择分析模式（提示词模式/Agent模式）
    - 输入论文 URL 或上传 PDF 文件
+   - 自动验证和格式化 arXiv URL
    - 选择提示词模板
    - 实时显示分析进度和结果
    - 导出分析报告（Markdown格式）
    - 查看历史分析记录
+   - 支持重新分析功能
 3. **使用流程**:
 
    - 在侧边栏选择 LLM 提供商和分析模式
@@ -155,9 +160,16 @@ python main.py -p yuanbao
 - `contribution`: 专注于主要贡献分析
 - `full_analysis`: 全面深入的分析
 
+此外，还支持视觉语言模型(VLM)的提示词模板：
+- `description_image`: 用于图像内容描述
+- `ocr_image`: 用于OCR图像到Markdown的转换
+
 #### 输出结果
 
-分析结果将保存在 `outputs` 目录下，文件名格式为 `analysis_prompt_{prompt_name}.md`。
+分析结果将保存在 `outputs` 目录下，文件名格式为：
+
+- 命令行工具: `analysis_prompt_{prompt_name}.md`
+- 图形界面: `analysis_{session_id}_{paper_id}_prompt_{prompt_name}.md`
 
 示例输出:
 
@@ -182,7 +194,7 @@ python main.py -p yuanbao
    - 不同提供商的 API 密钥格式可能不同
 2. URL 格式:
 
-   - 目前主要支持 arXiv 的论文 URL
+   - 支持 arXiv 格式的自动验证和转换（从abs到pdf格式）
    - URL 必须直接指向 PDF 文件
 3. 请求限制:
 

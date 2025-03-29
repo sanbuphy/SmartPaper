@@ -13,8 +13,8 @@ import streamlit as st
 from loguru import logger
 import yaml
 import re
-from src.core.reader import SmartPaper
-from src.core.prompt_library import list_prompts
+from src.core.smart_paper_core import SmartPaper
+from src.core.prompt_manager import list_prompts
 from typing import List, Dict
 import sys
 import uuid  # 用于生成用户唯一ID

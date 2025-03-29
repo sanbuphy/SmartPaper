@@ -12,6 +12,7 @@ SmartPaper测试运行脚本
     - 运行特定类别测试: python run_tests.py --category core
     - 运行特定测试文件: python run_tests.py --file test_paper_url.py
     - 包含magic_pdf相关测试: python run_tests.py --include-magic-pdf
+    - 排除集成测试: python run_tests.py --exclude-integration
 """
 
 import os
@@ -36,7 +37,14 @@ def check_is_magic_pdf_test(file_path):
     return os.path.basename(file_path) in magic_pdf_tests
 
 
-def get_test_files(base_dir, category=None, file_name=None, include_magic_pdf=False):
+def get_test_files(
+    base_dir,
+    category=None,
+    file_name=None,
+    include_magic_pdf=False,
+    run_integration=False,
+    exclude_integration=True,
+):
     """
     获取要运行的测试文件列表
 
@@ -45,6 +53,8 @@ def get_test_files(base_dir, category=None, file_name=None, include_magic_pdf=Fa
         category: 测试类别（core, tools, integration, utils）
         file_name: 指定的测试文件名
         include_magic_pdf: 是否包含 magic_pdf 相关测试
+        run_integration: 是否运行集成测试
+        exclude_integration: 是否排除集成测试
 
     Returns:
         list: 测试文件路径列表
@@ -58,6 +68,9 @@ def get_test_files(base_dir, category=None, file_name=None, include_magic_pdf=Fa
                 file_path = os.path.join(root, file_name)
                 # 如果不包含 magic_pdf 测试且该文件是 magic_pdf 测试，则跳过
                 if not include_magic_pdf and check_is_magic_pdf_test(file_path):
+                    continue
+                # 如果排除集成测试且该文件在集成测试目录中，则跳过
+                if exclude_integration and "integration" in file_path:
                     continue
                 test_files.append(file_path)
     elif category:
@@ -73,11 +86,21 @@ def get_test_files(base_dir, category=None, file_name=None, include_magic_pdf=Fa
                         if file.startswith("test_") and file.endswith(".py"):
                             file_path = os.path.join(root, file)
                             if not check_is_magic_pdf_test(file_path):
+                                # 如果排除集成测试且该文件在集成测试目录中，则跳过
+                                if exclude_integration and "integration" in file_path:
+                                    continue
                                 test_files.append(file_path)
     else:
         # 如果没有指定，运行所有测试
         if include_magic_pdf:
-            test_files.append(base_dir)
+            if exclude_integration:
+                # 排除集成测试目录
+                for root, dirs, _ in os.walk(base_dir):
+                    if "integration" in dirs:
+                        dirs.remove("integration")
+                    test_files.append(root)
+            else:
+                test_files.append(base_dir)
         else:
             # 遍历所有测试目录，逐个添加非 magic_pdf 的测试文件
             for root, _, files in os.walk(base_dir):
@@ -85,6 +108,20 @@ def get_test_files(base_dir, category=None, file_name=None, include_magic_pdf=Fa
                     if file.startswith("test_") and file.endswith(".py"):
                         file_path = os.path.join(root, file)
                         if not check_is_magic_pdf_test(file_path):
+                            # 如果排除集成测试且该文件在集成测试目录中，则跳过
+                            if exclude_integration and "integration" in file_path:
+                                continue
+                            test_files.append(file_path)
+
+    # 如果需要运行集成测试
+    if run_integration:
+        integration_dir = os.path.join(base_dir, "integration")
+        if os.path.exists(integration_dir):
+            for root, _, files in os.walk(integration_dir):
+                for file in files:
+                    if file.startswith("test_") and file.endswith(".py"):
+                        file_path = os.path.join(root, file)
+                        if not check_is_magic_pdf_test(file_path) or include_magic_pdf:
                             test_files.append(file_path)
 
     return test_files
@@ -135,14 +172,29 @@ def main():
     parser.add_argument(
         "--include-magic-pdf", action="store_true", help="包含 magic_pdf 相关测试（默认忽略）"
     )
+    parser.add_argument("--run-integration", action="store_true", help="运行集成测试")
+    parser.add_argument(
+        "--exclude-integration", action="store_true", default=True, help="排除集成测试（默认启用）"
+    )
 
     args = parser.parse_args()
+
+    # 如果明确要运行集成测试，则不排除集成测试
+    if args.run_integration:
+        args.exclude_integration = False
 
     # 确定测试基础目录
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     # 获取测试文件列表
-    test_paths = get_test_files(current_dir, args.category, args.file, args.include_magic_pdf)
+    test_paths = get_test_files(
+        current_dir,
+        args.category,
+        args.file,
+        args.include_magic_pdf,
+        args.run_integration,
+        args.exclude_integration,
+    )
 
     # 运行测试
     success = run_tests(test_paths, args.verbose)
