@@ -3,7 +3,7 @@ from typing import Dict, Optional, Any
 from pathlib import Path
 import tempfile
 import requests
-from tools.everything_to_text.pdf_to_md_markitdown import MarkdownConverter
+from src.core.document_converter import convert_to_text
 
 
 class PDFConverter:
@@ -19,9 +19,9 @@ class PDFConverter:
             llm_client (Any): LLM客户端,用于图像描述等高级功能
             llm_model (str): LLM模型名称
         """
-        self.converter = MarkdownConverter(
-            config=config, llm_client=llm_client, llm_model=llm_model
-        )
+        self.config = config or {}
+        self.llm_client = llm_client
+        self.llm_model = llm_model
 
     def convert(self, file_path: str) -> Dict:
         """转换PDF文件为文本
@@ -39,7 +39,9 @@ class PDFConverter:
         if file_path.suffix.lower() != ".pdf":
             raise ValueError("仅支持PDF文件")
 
-        return self.converter.convert(str(file_path))
+        return convert_to_text(
+            str(file_path), llm_client=self.llm_client, llm_model=self.llm_model, config=self.config
+        )
 
     def convert_url(self, url: str) -> Dict | None:
         """从URL下载并转换PDF文件

@@ -11,7 +11,7 @@ from openai import OpenAI
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from tools.everything_to_text.pdf_to_md_markitdown import MarkdownConverter
+from src.core.document_converter import convert_to_text
 
 
 @pytest.fixture
@@ -31,33 +31,29 @@ def test_files():
 
 
 @pytest.fixture
-def sample_url():
-    """示例URL fixture"""
-    return "https://arxiv.org/pdf/2312.12456.pdf"
+def basic_config():
+    """基础配置 fixture"""
+    return {"ocr_enabled": True}
 
 
 @pytest.fixture
-def converter():
-    """基础转换器 fixture"""
-    config = {"ocr_enabled": True}
-    return MarkdownConverter(config=config)
+def llm_client():
+    """LLM客户端 fixture"""
+    return OpenAI()
 
 
 @pytest.fixture
-def converter_with_llm():
-    """带LLM的转换器 fixture"""
-    config = {"ocr_enabled": True}
-    llm_client = OpenAI()
-    llm_model = "gpt-4-vision-preview"
-    return MarkdownConverter(config=config, llm_client=llm_client, llm_model=llm_model)
+def llm_model():
+    """LLM模型 fixture"""
+    return "gpt-4-vision-preview"
 
 
-def test_convert_pdf(converter, test_files):
+def test_convert_pdf(test_files, basic_config):
     """测试PDF文件转换"""
     if not os.path.exists(test_files["pdf"]):
         pytest.skip("PDF测试文件不存在")
 
-    result = converter.convert(test_files["pdf"])
+    result = convert_to_text(test_files["pdf"], config=basic_config)
 
     assert isinstance(result, dict)
     assert "metadata" in result
@@ -66,12 +62,14 @@ def test_convert_pdf(converter, test_files):
     assert len(result["text_content"]) > 0
 
 
-def test_convert_image_with_llm(converter_with_llm, test_files):
+def test_convert_image_with_llm(test_files, basic_config, llm_client, llm_model):
     """测试带LLM的图片转换"""
     if not os.path.exists(test_files["image"]):
         pytest.skip("图片测试文件不存在")
 
-    result = converter_with_llm.convert(test_files["image"])
+    result = convert_to_text(
+        test_files["image"], config=basic_config, llm_client=llm_client, llm_model=llm_model
+    )
 
     assert isinstance(result, dict)
     assert "images" in result
@@ -82,35 +80,18 @@ def test_convert_image_with_llm(converter_with_llm, test_files):
         assert isinstance(img["description"], str)
 
 
-def test_convert_url(converter, sample_url):
-    """测试URL文件转换"""
-    result = converter.convert_url(sample_url)
-
-    assert isinstance(result, dict)
-    assert "metadata" in result
-    assert "text_content" in result
-    assert isinstance(result["text_content"], str)
-    assert len(result["text_content"]) > 0
-
-
-def test_convert_invalid_file(converter):
+def test_convert_invalid_file(basic_config):
     """测试无效文件转换"""
     with pytest.raises(Exception):
-        converter.convert("invalid_file.pdf")
+        convert_to_text("invalid_file.pdf", config=basic_config)
 
 
-def test_convert_invalid_url(converter):
-    """测试无效URL转换"""
-    with pytest.raises(Exception):
-        converter.convert_url("https://invalid-url.com/doc.pdf")
-
-
-def test_convert_text_file(converter, test_files):
+def test_convert_text_file(test_files, basic_config):
     """测试文本文件转换"""
     if not os.path.exists(test_files["text"]):
         pytest.skip("文本测试文件不存在")
 
-    result = converter.convert(test_files["text"])
+    result = convert_to_text(test_files["text"], config=basic_config)
 
     assert isinstance(result, dict)
     assert "text_content" in result
@@ -119,12 +100,12 @@ def test_convert_text_file(converter, test_files):
 
 
 @pytest.mark.parametrize("file_type", ["word", "ppt", "excel"])
-def test_convert_office_files(converter, test_files, file_type):
+def test_convert_office_files(test_files, basic_config, file_type):
     """测试Office文件转换"""
     if not os.path.exists(test_files[file_type]):
         pytest.skip(f"{file_type}测试文件不存在")
 
-    result = converter.convert(test_files[file_type])
+    result = convert_to_text(test_files[file_type], config=basic_config)
 
     assert isinstance(result, dict)
     assert "metadata" in result

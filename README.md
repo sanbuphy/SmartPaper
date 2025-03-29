@@ -192,6 +192,43 @@ python main.py -p yuanbao
    - 程序会自动创建 `outputs` 目录
    - 同名文件会被覆盖，请注意备份
 
+## 运行测试
+
+SmartPaper 提供了完整的测试套件，确保各项功能正常工作。你可以使用以下方式运行测试：
+
+1. **使用测试运行脚本** (推荐):
+
+   ```bash
+   # 运行所有测试
+   python run_tests.py
+
+   # 运行特定类别的测试
+   python run_tests.py --category core     # 运行核心功能测试
+   python run_tests.py --category tools    # 运行工具类测试
+   python run_tests.py --category integration   # 运行集成测试
+
+   # 运行特定的测试文件
+   python run_tests.py --file test_paper_url.py
+
+   # 显示详细测试信息
+   python run_tests.py --verbose  # 或使用 -v
+   ```
+
+2. **直接使用 pytest**:
+
+   ```bash
+   # 运行所有测试
+   python -m pytest tests/
+
+   # 运行特定类别的测试
+   python -m pytest tests/core/
+
+   # 运行特定的测试文件
+   python -m pytest tests/core/test_paper_url.py
+   ```
+
+更多详细信息，请参阅 [tests/README.md](tests/README.md)。
+
 ## 开发计划
 
 - [ ] 支持 Agent 模式

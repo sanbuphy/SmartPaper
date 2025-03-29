@@ -84,6 +84,9 @@ vlm:
     temperature: 0.7
     max_tokens: 4096
 
+# 文档转换器配置
+document_converter:
+  converter_name: "markitdown"  # 可选: markitdown, mineru，默认使用 markitdown
 
 # 输出配置
 output:

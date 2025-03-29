@@ -42,7 +42,7 @@
 import os  # 用于文件和目录操作
 import re  # 用于正则表达式处理
 from pathlib import Path  # 用于跨平台的路径操作
-from tools.everything_to_text.image_to_text import describe_image
+from src.tools.everything_to_text.image_to_text import describe_image
 
 
 def read_markdown_files(path):
@@ -105,7 +105,7 @@ def process_markdown_image(file_path, force_add_desc=False, prompt=None):
 7. 整体场景构图
 
 示例模板：
-“这张图片显示了[主要主体]在[位置]。[物体]是[空间关系]。主要颜色是[颜色]。[关于动作/背景的其他详细信息]。”
+"这张图片显示了[主要主体]在[位置]。[物体]是[空间关系]。主要颜色是[颜色]。[关于动作/背景的其他详细信息]。"
 
     """
     )

@@ -12,7 +12,7 @@ from typing import Dict
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from tools.everything_to_text.pdf_to_md_markitdown import MarkdownConverter
+from src.core.document_converter import convert_to_text
 
 
 @pytest.fixture
@@ -33,9 +33,9 @@ def arxiv_paper():
 
 
 @pytest.fixture
-def converter():
-    """Markdown转换器 fixture"""
-    return MarkdownConverter()
+def config():
+    """测试配置 fixture"""
+    return {"llm": {"max_requests": 3}}
 
 
 def test_arxiv_download_success(temp_dir, arxiv_paper):
@@ -52,7 +52,7 @@ def test_arxiv_download_success(temp_dir, arxiv_paper):
     assert os.path.getsize(pdf_path) > 0
 
 
-def test_arxiv_convert_to_markdown(temp_dir, arxiv_paper, converter):
+def test_arxiv_convert_to_markdown(temp_dir, arxiv_paper, config):
     """测试将下载的论文转换为Markdown"""
     # 先下载论文
     pdf_path = os.path.join(temp_dir, f"{arxiv_paper['paper_id']}.pdf")
@@ -61,7 +61,7 @@ def test_arxiv_convert_to_markdown(temp_dir, arxiv_paper, converter):
         f.write(response.content)
 
     # 转换为Markdown
-    result = converter.convert(pdf_path)
+    result = convert_to_text(pdf_path, config=config)
 
     assert isinstance(result, dict)
     assert "text_content" in result
@@ -72,7 +72,7 @@ def test_arxiv_convert_to_markdown(temp_dir, arxiv_paper, converter):
     assert arxiv_paper["expected_title"] in result["text_content"]
 
 
-def test_arxiv_content_processing(temp_dir, arxiv_paper, converter):
+def test_arxiv_content_processing(temp_dir, arxiv_paper, config):
     """测试论文内容处理（去除参考文献等）"""
     # 先下载论文
     pdf_path = os.path.join(temp_dir, f"{arxiv_paper['paper_id']}.pdf")
@@ -81,7 +81,7 @@ def test_arxiv_content_processing(temp_dir, arxiv_paper, converter):
         f.write(response.content)
 
     # 转换并处理内容
-    result = converter.convert(pdf_path)["text_content"]
+    result = convert_to_text(pdf_path, config=config)["text_content"]
 
     # 只保留References之前的内容
     if "References" in result:
@@ -102,7 +102,7 @@ def test_invalid_arxiv_url():
         response.raise_for_status()
 
 
-def test_arxiv_metadata(temp_dir, arxiv_paper, converter):
+def test_arxiv_metadata(temp_dir, arxiv_paper, config):
     """测试arXiv论文元数据提取"""
     # 先下载论文
     pdf_path = os.path.join(temp_dir, f"{arxiv_paper['paper_id']}.pdf")
@@ -110,7 +110,7 @@ def test_arxiv_metadata(temp_dir, arxiv_paper, converter):
     with open(pdf_path, "wb") as f:
         f.write(response.content)
 
-    result = converter.convert(pdf_path)
+    result = convert_to_text(pdf_path, config=config)
 
     assert isinstance(result, dict)
     assert "metadata" in result

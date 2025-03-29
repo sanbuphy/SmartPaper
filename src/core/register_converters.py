@@ -17,7 +17,7 @@ except ImportError:
     _has_mineru = False
 
 try:
-    from src.tools.everything_to_text.pdf_to_md_markitdown import MarkdownConverter
+    from src.tools.everything_to_text.pdf_to_md_markitdown import markitdown_pdf2md
 
     _has_markitdown = True
 except ImportError:
@@ -28,7 +28,7 @@ def register_all_converters():
     """注册所有可用的转换器"""
     # 注册 MarkItDown 转换器（作为默认PDF转换器）
     if _has_markitdown:
-        DocumentConverter.register("markitdown", MarkdownConverter.convert)
+        DocumentConverter.register("markitdown", markitdown_pdf2md)
 
     # 注册 Mineru 转换器
     if _has_mineru:
