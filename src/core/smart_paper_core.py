@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Optional, Generator
+from typing import Dict, List, Optional, Generator, AsyncGenerator
 import yaml
 from pathlib import Path
 import tempfile
@@ -263,13 +263,16 @@ class SmartPaper:
         except Exception as e:
             raise Exception(f"处理论文URL失败: {str(e)}")
 
-    def process_paper_url_stream(
+    async def process_paper_url_stream(
         self,
         url: str,
         mode: str = "prompt",
         prompt_name: Optional[str] = None,
         description: Optional[str] = None,
     ) -> Generator[str, None, None]:
+    # async def process_paper_url_stream(
+    #     self, url: str, mode: str = "prompt", prompt_name: Optional[str] = None, description: Optional[str] = None
+    # ) -> AsyncGenerator[str, None]:
         """流式处理论文URL
 
         Args:
@@ -306,12 +309,12 @@ class SmartPaper:
             if mode == "prompt":
                 yield "使用提示词模式进行分析...\n"
                 # 使用流式接口处理
-                for chunk in self.processor.process_stream_with_content(text_content, prompt_name):
+                async for chunk in self.processor.process_stream_with_content(text_content, prompt_name):
                     yield chunk
             else:
                 yield "使用智能代理模式进行分析...\n"
                 # 使用agent的流式接口
-                for chunk in self.agent.analyze_stream(text_content):
+                async for chunk in self.agent.analyze_stream(text_content):
                     yield chunk
 
             logger.info(f"流式分析完成，使用模式: {mode}")

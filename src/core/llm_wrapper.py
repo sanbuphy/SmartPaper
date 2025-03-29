@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Generator, List
+from typing import Dict, Optional, Generator, List, AsyncGenerator
 from langchain.schema import HumanMessage, SystemMessage, BaseMessage
 from src.core.prompt_manager import get_prompt
 from src.utils.llm_adapter import create_llm_adapter
@@ -84,7 +84,29 @@ class LLMWrapper:
                 yield chunk
         except Exception as e:
             raise Exception(f"LLM流式请求失败: {str(e)}")
+            
+    async def _stream_chat_async(self, messages: List[BaseMessage]) -> AsyncGenerator[str, None]:
+        """异步流式处理消息
 
+        Args:
+            messages (List[BaseMessage]): 消息列表
+
+        Yields:
+            str: 流式输出的文本片段
+
+        Raises:
+            Exception: 当请求失败时抛出异常
+        """
+        try:
+            # 使用同步流式接口并通过异步方式包装
+            import asyncio
+            for chunk in self.llm.stream(messages):
+                yield chunk
+                # 让出控制权给事件循环，确保其他异步任务能够执行
+                await asyncio.sleep(0)
+        except Exception as e:
+            raise Exception(f"LLM异步流式请求失败: {str(e)}")
+            
     def process_stream_with_content(
         self, text: str, prompt_name: Optional[str] = None
     ) -> Generator[str, None, None]:
@@ -125,6 +147,47 @@ class LLMWrapper:
         except Exception as e:
             logger.error(f"LLM流式请求失败: {str(e)}")
             raise Exception(f"LLM流式请求失败: {str(e)}")
+            
+    async def process_stream_with_content(
+        self, text: str, prompt_name: Optional[str] = None
+    ) -> AsyncGenerator[str, None]:
+        """使用提示词异步流式处理已获取的文本内容
+
+        Args:
+            text (str): 要处理的文本内容
+            prompt_name (Optional[str]): 提示词名称
+
+        Yields:
+            str: 流式输出的文本片段
+
+        Raises:
+            Exception: 当超过最大请求次数时抛出异常
+        """
+        # 检查请求次数
+        if self.request_count >= self.max_requests:
+            logger.error(f"已达到最大请求次数限制({self.max_requests}次)")
+            raise Exception(f"已达到最大请求次数限制({self.max_requests}次)")
+
+        try:
+            self.request_count += 1
+
+            # 获取提示词
+            if prompt_name is None:
+                prompt_name = self.config["prompts"]["default"]
+            prompt_template = get_prompt(prompt_name)
+            logger.info(f"使用提示词模板: {prompt_name}")
+
+            # 填充提示词
+            prompt = prompt_template.format(text=text)
+            messages = [HumanMessage(content=prompt)]
+
+            # 使用异步流式接口处理
+            async for chunk in self._stream_chat_async(messages):
+                yield chunk
+
+        except Exception as e:
+            logger.error(f"LLM异步流式请求失败: {str(e)}")
+            raise Exception(f"LLM异步流式请求失败: {str(e)}")
 
     def set_api_key(self, api_key: str):
         """设置API密钥
