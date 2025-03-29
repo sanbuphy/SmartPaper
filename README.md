@@ -186,6 +186,13 @@ python cli_get_prompt_mode_paper.py -p yuanbao
 [分析内容]
 ```
 
+## 参考文档
+
+项目提供了以下参考文档，帮助用户更好地理解和使用系统：
+
+- [配置文件使用说明](docs/config_yaml_guide.md) - 详细介绍配置文件结构、参数说明及配置注意事项
+- [文档转换器注册指南](docs/register_document_converter.md) - 介绍如何开发和注册自定义文档转换器
+
 ## 注意事项
 
 1. API 密钥:
