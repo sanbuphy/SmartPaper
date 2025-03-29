@@ -9,16 +9,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 import os
 import re
-from src.core.reader import SmartPaper
-from src.core.prompt_library import list_prompts
+from src.core.smart_paper_core import SmartPaper
+from src.core.prompt_manager import list_prompts
 from typing import Dict, AsyncGenerator
 import uuid
 
-app = FastAPI(
-    title="SmartPaper API",
-    description="SmartPaper论文分析API接口",
-    version="1.0.0"
-)
+app = FastAPI(title="SmartPaper API", description="SmartPaper论文分析API接口", version="1.0.0")
 
 # 配置CORS
 app.add_middleware(
@@ -30,12 +26,8 @@ app.add_middleware(
 )
 
 # 配置日志
-logger.add(
-    "logs/api.log",
-    rotation="500 MB",
-    retention="10 days",
-    level="INFO"
-)
+logger.add("logs/api.log", rotation="500 MB", retention="10 days", level="INFO")
+
 
 def validate_and_format_arxiv_url(url: str) -> str:
     """验证并格式化arXiv URL
@@ -74,8 +66,10 @@ def validate_and_format_arxiv_url(url: str) -> str:
 
     return formatted_url
 
+
 async def process_paper_stream(url: str, prompt_name: str = "yuanbao") -> AsyncGenerator[str, None]:
     """处理论文并以流式方式yield结果"""
+    # 在开始流式响应前先验证所有可能的错误条件
     try:
         # 验证并格式化URL
         url = validate_and_format_arxiv_url(url)
@@ -100,22 +94,32 @@ async def process_paper_stream(url: str, prompt_name: str = "yuanbao") -> AsyncG
         with open(output_file, "w", encoding="utf-8") as f:
             chunk_count = 0
             total_length = 0
-            async for chunk in reader.process_paper_url_stream(
-                url, mode="prompt", prompt_name=prompt_name
-            ):
-                chunk_count += 1
-                total_length += len(chunk)
-                f.write(chunk)
-                if chunk_count % 10 == 0:  # 每10个块记录一次日志
-                    logger.debug(f"已接收 {chunk_count} 个响应块，总长度: {total_length} 字符")
-                yield chunk
+            # 使用try-except包装流式处理过程，确保在流式响应过程中的异常能够被正确处理
+            try:
+                async for chunk in reader.process_paper_url_stream(
+                    url, mode="prompt", prompt_name=prompt_name
+                ):
+                    chunk_count += 1
+                    total_length += len(chunk)
+                    f.write(chunk)
+                    if chunk_count % 10 == 0:  # 每10个块记录一次日志
+                        logger.debug(f"已接收 {chunk_count} 个响应块，总长度: {total_length} 字符")
+                    yield chunk
 
-        logger.info(f"分析完成，共接收 {chunk_count} 个响应块，总长度: {total_length} 字符")
-        logger.info(f"分析结果已保存到: {output_file}")
+                logger.info(f"分析完成，共接收 {chunk_count} 个响应块，总长度: {total_length} 字符")
+                logger.info(f"分析结果已保存到: {output_file}")
+            except Exception as e:
+                # 在流式响应过程中出现异常时，先尝试向客户端发送错误信息
+                error_msg = f"流式处理过程中出现错误: {str(e)}"
+                logger.error(error_msg, exc_info=True)
+                yield f"\n\n❌ 错误: {error_msg}\n\n"
+                # 然后重新抛出异常，让外层捕获
+                raise
 
     except Exception as e:
         logger.error(f"处理失败: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/prompts")
 async def get_prompts() -> Dict:
@@ -126,6 +130,7 @@ async def get_prompts() -> Dict:
     except Exception as e:
         logger.error(f"获取提示词模板失败: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/analyze")
 async def analyze_paper(url: str, prompt_name: str = "yuanbao"):
@@ -139,16 +144,15 @@ async def analyze_paper(url: str, prompt_name: str = "yuanbao"):
         StreamingResponse: 流式响应对象
     """
     try:
-        return StreamingResponse(
-            process_paper_stream(url, prompt_name),
-            media_type="text/plain"
-        )
+        return StreamingResponse(process_paper_stream(url, prompt_name), media_type="text/plain")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"处理论文失败: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
