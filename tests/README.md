@@ -24,7 +24,38 @@
 
 ## 运行测试
 
-你可以按照以下方式运行测试：
+### 使用测试运行脚本 (推荐)
+
+SmartPaper 提供了一个测试运行脚本 `run_tests.py`，可以方便地运行测试：
+
+1. 运行所有测试：
+```bash
+python tests/run_tests.py
+```
+
+2. 运行特定类别的测试：
+```bash
+python tests/run_tests.py --category core    # 运行核心功能测试
+python tests/run_tests.py --category tools   # 运行工具类测试
+python tests/run_tests.py --category integration  # 运行集成测试
+python tests/run_tests.py --category utils   # 运行工具函数测试
+```
+
+3. 运行特定测试文件：
+```bash
+python tests/run_tests.py --file test_paper_url.py
+```
+
+4. 显示详细测试信息：
+```bash
+python tests/run_tests.py --verbose
+# 或使用短选项
+python tests/run_tests.py -v
+```
+
+### 使用 pytest 直接运行
+
+也可以直接使用 pytest 运行测试：
 
 1. 运行所有测试：
 ```bash

@@ -2,10 +2,12 @@ import os
 from typing import Dict, List, Optional, Generator
 import yaml
 from pathlib import Path
+import tempfile
+import requests
 
 from src.core.llm_wrapper import LLMWrapper
 from src.core.agent import PaperAgent
-from src.tools.everything_to_text.pdf_to_md_markitdown import MarkdownConverter
+from src.core.document_converter import convert_to_text
 from src.utils.output_formatter import OutputFormatter
 from loguru import logger
 
@@ -33,7 +35,6 @@ class SmartPaper:
         logger.info(f"加载配置文件成功: {config_file}")
 
         # 初始化组件
-        self.converter: MarkdownConverter = MarkdownConverter(config=self.config)
         self.processor: LLMWrapper = LLMWrapper(self.config)
         self.agent: PaperAgent = PaperAgent(self.config)
         self.output_formatter: OutputFormatter = OutputFormatter(self.config["output"])
@@ -57,7 +58,9 @@ class SmartPaper:
         except Exception as e:
             raise Exception(f"加载配置文件失败: {str(e)}")
 
-    def process_paper(self, file_path: str, mode: str = "prompt", prompt_name: Optional[str] = None) -> Dict:
+    def process_paper(
+        self, file_path: str, mode: str = "prompt", prompt_name: Optional[str] = None
+    ) -> Dict:
         """处理单个论文文件
 
         Args:
@@ -69,9 +72,12 @@ class SmartPaper:
             Dict: 处理结果
         """
         try:
-            # 转换PDF
-            result = self.converter.convert(file_path)
-            logger.info(f"转换PDF成功: {file_path}")
+            # 转换PDF，使用配置中指定的转换器
+            converter_name = self.config.get("document_converter", {}).get(
+                "converter_name", "markitdown"
+            )
+            result = convert_to_text(file_path, config=self.config, converter_name=converter_name)
+            logger.info(f"转换PDF成功: {file_path}，使用转换器: {converter_name}")
 
             # 根据模式处理
             if mode == "prompt":
@@ -117,8 +123,107 @@ class SmartPaper:
 
         return results
 
+    def convert_url(self, url: str, description: Optional[str] = None) -> Dict:
+        """从URL下载并转换文件
+
+        Args:
+            url (str): 文件URL
+            description (str, optional): 文件描述
+
+        Returns:
+            Dict: 包含转换结果的字典
+        """
+        try:
+            # 获取配置中指定的转换器
+            converter_name = self.config.get("document_converter", {}).get(
+                "converter_name", "markitdown"
+            )
+
+            # 判断是否为PDF文件
+            is_arxiv = "arxiv.org" in url.lower()
+
+            if is_arxiv:
+                # 创建temp目录(如果不存在)
+                temp_dir = os.path.join(
+                    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "temp"
+                )
+                os.makedirs(temp_dir, exist_ok=True)
+
+                # 从URL提取文件名
+                arxiv_id = url.split("/")[-1]
+                if not arxiv_id.endswith(".pdf"):
+                    arxiv_id += ".pdf"
+                temp_path = os.path.join(temp_dir, arxiv_id)
+
+                # 检查是否已存在同名文件
+                if not os.path.exists(temp_path):
+                    # 下载PDF文件
+                    logger.info(f"开始下载PDF: {url}")
+                    response = requests.get(url)
+                    response.raise_for_status()
+
+                    with open(temp_path, "wb") as f:
+                        f.write(response.content)
+                    logger.info("PDF下载完成")
+
+                # 转换PDF文件
+                result = convert_to_text(
+                    temp_path, config=self.config, converter_name=converter_name
+                )
+                logger.info(f"PDF转换完成，使用转换器: {converter_name}")
+
+                # 处理文本内容
+                text_content = result["text_content"]
+                if "References" in text_content:
+                    text_content = text_content.split("References")[0]
+                text_content = "\n".join(
+                    [line for line in text_content.split("\n") if line.strip()]
+                )
+
+                # 更新结果
+                result["text_content"] = text_content
+                result["metadata"]["url"] = url
+                if description:
+                    result["metadata"]["description"] = description
+                return result
+
+            else:
+                # 获取网页内容
+                response = requests.get(url)
+                response.raise_for_status()
+
+                # 使用临时文件保存内容
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as temp_file:
+                    temp_file.write(response.content)
+                    temp_path = temp_file.name
+
+                try:
+                    # 转换HTML文件
+                    result = convert_to_text(
+                        temp_path, config=self.config, converter_name=converter_name
+                    )
+                    logger.info(f"HTML转换完成，使用转换器: {converter_name}")
+
+                    # 添加元数据
+                    metadata = {"title": url.split("/")[-1], "url": url, "file_type": "html"}
+                    result["metadata"] = {**result.get("metadata", {}), **metadata}
+
+                    return result
+                finally:
+                    # 清理临时文件
+                    os.unlink(temp_path)
+
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"下载文件失败: {str(e)}")
+        except Exception as e:
+            raise Exception(f"URL转换失败: {str(e)}")
+
     def process_paper_url(
-        self, url: str, mode: str = "prompt", prompt_name: Optional[str] = None, description: Optional[str] = None
+        self,
+        url: str,
+        mode: str = "prompt",
+        prompt_name: Optional[str] = None,
+        description: Optional[str] = None,
     ) -> Dict:
         """处理论文URL
 
@@ -134,7 +239,7 @@ class SmartPaper:
         try:
             # 下载并转换PDF
             logger.info(f"开始处理论文URL: {url}")
-            result = self.converter.convert_url(url, description=description)
+            result = self.convert_url(url, description=description)
             logger.info("PDF转换完成，开始分析")
 
             # 获取PDF内容
@@ -159,7 +264,11 @@ class SmartPaper:
             raise Exception(f"处理论文URL失败: {str(e)}")
 
     def process_paper_url_stream(
-        self, url: str, mode: str = "prompt", prompt_name: Optional[str] = None, description: Optional[str] = None
+        self,
+        url: str,
+        mode: str = "prompt",
+        prompt_name: Optional[str] = None,
+        description: Optional[str] = None,
     ) -> Generator[str, None, None]:
         """流式处理论文URL
 
@@ -186,7 +295,7 @@ class SmartPaper:
             logger.info(f"开始流式处理论文URL: {url}")
             yield "🚀 正在下载并转换PDF...\n\n"
 
-            result = self.converter.convert_url(url, description=description)
+            result = self.convert_url(url, description=description)
             logger.info("PDF转换完成，开始流式分析")
             yield "✅ PDF转换完成，开始分析...\n\n"
 

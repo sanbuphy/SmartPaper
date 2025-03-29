@@ -1,9 +1,10 @@
 import os
 import sys
 import argparse
+import traceback
 from loguru import logger
-from src.core.reader import SmartPaper
-from src.core.prompt_library import list_prompts
+from src.core.smart_paper_core import SmartPaper
+from src.core.prompt_manager import list_prompts
 
 
 def process_paper(url: str, prompt_name: str = "yuanbao"):
@@ -34,6 +35,7 @@ def process_paper(url: str, prompt_name: str = "yuanbao"):
 
     except Exception as e:
         logger.error(f"处理失败: {str(e)}")
+        logger.error(f"错误详情: {traceback.format_exc()}")
         sys.exit(1)
 
 

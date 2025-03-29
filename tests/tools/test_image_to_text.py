@@ -10,7 +10,7 @@ import pytest
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from tools.everything_to_text.image_to_text import (
+from src.tools.everything_to_text.image_to_text import (
     describe_image,
     save_result_to_file,
     extract_text_from_image,
@@ -54,7 +54,7 @@ def description_prompt():
 7. 整体场景构图
 
 示例模板：
-“这张图片显示了[主要主体]在[位置]。[物体]是[空间关系]。主要颜色是[颜色]。[关于动作/背景的其他详细信息]。”
+"这张图片显示了[主要主体]在[位置]。[物体]是[空间关系]。主要颜色是[颜色]。[关于动作/背景的其他详细信息]。"
 
 
 """
