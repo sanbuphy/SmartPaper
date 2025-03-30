@@ -5,7 +5,7 @@
 import os
 import pytest
 
-from src.tools.everything_to_text.pdf_plumber_extractor import process_pdf
+from src.tools.everything_to_text.pdf_to_md_pdfplumber import process_pdf
 
 
 def test_pdf_to_md_conversion():
