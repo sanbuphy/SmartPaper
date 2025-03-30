@@ -52,3 +52,5 @@ config/config.yaml
 temp/
 tests/utils/test_get_abs_path_datas/test_file_1.txt
 tests/utils/test_get_abs_path_datas/test_file_2.txt
+
+tests/tools/output
