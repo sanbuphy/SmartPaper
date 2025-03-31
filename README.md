@@ -1,12 +1,13 @@
 # SmartPaper
 
-SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(OpenAI、Deepseek、Kimi、豆包、智谱等),可以自动分析论文内容并生成结构化的分析报告。
+SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(文心一言大模型、OpenAI、Deepseek、Kimi、豆包、智谱等),可以自动分析论文内容并生成结构化的分析报告。
 
 **注：项目高速迭代中，API 变动较快，待架构稳定后会避免核心代码变动。**
 
 ## 功能特点
 
 - 支持多种 LLM 提供商:
+- - 文心大模型
   - OpenAI
   - Deepseek
   - SiliconFlow
