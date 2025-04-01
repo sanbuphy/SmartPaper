@@ -126,7 +126,7 @@ def extract_markdown_content(text: str) -> str:
         end_index = text.find(end_marker, start_index)
         
         if end_index == -1:
-            return text[start_index:].trip()
+            return text[start_index:].strip()
         return text[start_index:end_index].strip()
     
     # 处理html代码块
@@ -318,7 +318,7 @@ class ImageTextExtractor:
             raise ValueError(f"Failed to determine image format: {e}")
 
 
-def get_image_title(image_description, api_key=None, base_url="https://api.siliconflow.com/v1"):
+def get_image_title(image_description, api_key=None, base_url="https://api.siliconflow.com/v1", timeout=30):
     """
     使用硅基流动的deepseek v3 为多模态提取的图片描述生成图片的标题。
 
@@ -326,34 +326,43 @@ def get_image_title(image_description, api_key=None, base_url="https://api.silic
         image_description (str): 图像的描述文本
         api_key (str): 您的OpenAI API密钥
         base_url (str): API基础URL
+        timeout (int): API请求超时时间(秒)
 
     返回:
-        str: 为图像生成的标题
+        str: 为图像生成的标题，如果生成失败则返回None
     """
+    if not image_description:
+        return None
 
-    if not api_key:
-        api_key = os.getenv("API_KEY")
-    # 使用Silicon Flow基础URL初始化客户端
-    client = OpenAI(api_key=api_key, base_url=base_url)
+    try:
+        if not api_key:
+            api_key = os.getenv("API_KEY")
+        
+        # 使用Silicon Flow基础URL初始化客户端
+        client = OpenAI(api_key=api_key, base_url=base_url)
 
-    # 发送API请求
-    response = client.chat.completions.create(
-        model="deepseek-ai/DeepSeek-V3",
-        messages=[
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT,
-            },
-            {
-                "role": "user",
-                "content": USER_PROMPT_TEMPLATE.format(description=image_description),
-            },
-        ],
-    )
+        # 发送API请求
+        response = client.chat.completions.create(
+            model="deepseek-ai/DeepSeek-V3",
+            messages=[
+                {
+                    "role": "system",
+                    "content": SYSTEM_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": USER_PROMPT_TEMPLATE.format(description=image_description),
+                },
+            ],
+            timeout=timeout
+        )
 
-    # 提取并返回标题
-    title = response.choices[0].message.content.strip()
-    return title
+        # 提取并返回标题
+        title = response.choices[0].message.content.strip()
+        return title
+    except Exception as e:
+        print(f"生成图像标题时出错: {e}")
+        return None
 
 
 def _process_image_with_model(
@@ -363,30 +372,32 @@ def _process_image_with_model(
     prompt_text: str = None,
     api_key: str = None,
     detail: str = "low",
-    post_process_func = None
+    post_process_func = None,
+    timeout: int = 60
 ) -> str:
     """处理图像并返回模型输出的基础函数"""
     if api_key is None:
         api_key = os.getenv("API_KEY")
     
-    extractor = ImageTextExtractor(
-        api_key=api_key,
-        prompt_path=prompt_path,
-        prompt=prompt_text
-    )
-
     try:
+        extractor = ImageTextExtractor(
+            api_key=api_key,
+            prompt_path=prompt_path,
+            prompt=prompt_text
+        )
+
         result = extractor.extract_image_text(
             local_image_path=image_path, model=model, detail=detail
         )
         
-        if not result.strip():
+        if not result or not result.strip():
             return "No content extracted from the image"
         
         if post_process_func:
             return post_process_func(result)
         return extract_markdown_content(result)
     except Exception as e:
+        print(f"处理图像时出错 ({os.path.basename(image_path)}): {str(e)}")
         return f"Error processing image: {str(e)}"
 
 
@@ -395,15 +406,29 @@ def extract_text_from_image(
     model: str = "Qwen/Qwen2.5-VL-72B-Instruct",
     ocr_prompt_path: str = None,
     api_key: str = None,
+    timeout: int = 60
 ) -> str:
-    """从图像中提取文本内容并转换为Markdown格式"""
+    """
+    从图像中提取文本内容并转换为Markdown格式
+    
+    Args:
+        image_path (str): 图像文件路径
+        model (str): 使用的模型名称
+        ocr_prompt_path (str): OCR提示文件路径
+        api_key (str): API密钥
+        timeout (int): 请求超时时间(秒)
+        
+    Returns:
+        str: 提取的文本内容，如果提取失败则返回错误信息
+    """
     return _process_image_with_model(
         image_path=image_path,
         model=model,
         prompt_path=ocr_prompt_path,
         prompt_text=ocr_prompt if not ocr_prompt_path else None,
         api_key=api_key,
-        detail="low"
+        detail="low",
+        timeout=timeout
     )
 
 
@@ -412,19 +437,96 @@ def describe_image(
     model: str = "Qwen/Qwen2.5-VL-72B-Instruct",
     description_prompt_path: str = None,
     api_key: str = None,
+    timeout: int = 60,
+    fallback_text: str = "无法识别图像内容"
 ) -> str:
-    """描述图像内容并生成文本描述"""
-    return _process_image_with_model(
+    """
+    描述图像内容并生成文本描述
+    
+    Args:
+        image_path (str): 图像文件路径
+        model (str): 使用的模型名称
+        description_prompt_path (str): 描述提示文件路径
+        api_key (str): API密钥
+        timeout (int): 请求超时时间(秒)
+        fallback_text (str): 如果描述失败时的备用文本
+        
+    Returns:
+        str: 图像的描述文本，如果生成失败则返回fallback_text
+    """
+    result = _process_image_with_model(
         image_path=image_path,
         model=model,
         prompt_path=description_prompt_path,
         prompt_text=description_prompt if not description_prompt_path else None,
         api_key=api_key,
-        detail="low"
+        detail="low",
+        timeout=timeout
     )
+    
+    # 如果结果包含错误信息，返回备用文本
+    if result.startswith("Error processing image:"):
+        return fallback_text
+    return result
 
 
-
+def process_image_with_base64(
+    image_path: str, 
+    output_dir: str = None,
+    model: str = "Qwen/Qwen2.5-VL-72B-Instruct",
+    api_key: str = None
+) -> dict:
+    """
+    处理图像并返回带有base64编码的结果
+    
+    Args:
+        image_path (str): 图像文件路径
+        output_dir (str): 输出目录，用于计算相对路径
+        model (str): 使用的模型名称
+        api_key (str): API密钥
+        
+    Returns:
+        dict: 包含以下键的字典：
+            - key (str): 图像键名
+            - filename (str): 图像文件名
+            - path (str): 图像绝对路径
+            - rel_path (str): 图像相对路径
+            - base64 (str): base64编码的图像数据
+            - description (str): 图像描述
+            - title (str): 图像标题
+    """
+    if output_dir is None:
+        output_dir = os.path.dirname(image_path)
+    
+    # 生成图像键名和相对路径
+    image_filename = os.path.basename(image_path)
+    image_key = os.path.splitext(image_filename)[0]
+    rel_path = os.path.relpath(image_path, output_dir)
+    
+    # 转换为base64
+    try:
+        base64_data = image_to_base64(image_path)
+    except Exception as e:
+        print(f"转换图像为base64时出错: {e}")
+        base64_data = ""
+    
+    # 获取图像描述
+    description = describe_image(image_path, model, None, api_key)
+    
+    # 生成图像标题
+    title = get_image_title(description, api_key)
+    if not title:
+        title = f"图片{image_filename}"
+    
+    return {
+        "key": image_key,
+        "filename": image_filename,
+        "path": image_path,
+        "rel_path": rel_path,
+        "base64": base64_data,
+        "description": description,
+        "title": title
+    }
 
 
 def extract_table_from_image(
@@ -432,8 +534,21 @@ def extract_table_from_image(
     model: str = "Qwen/Qwen2.5-VL-72B-Instruct",
     extract_table_prompt_path: str = None,
     api_key: str = None,
+    timeout: int = 120,
 ) -> str:
-    """从图像中提取表格内容并转换为Markdown或HTML格式"""
+    """
+    从图像中提取表格内容并转换为Markdown或HTML格式
+    
+    Args:
+        image_path (str): 图像文件路径
+        model (str): 使用的模型名称
+        extract_table_prompt_path (str): 表格提取提示文件路径
+        api_key (str): API密钥
+        timeout (int): 请求超时时间(秒)，表格提取通常需要更长时间
+        
+    Returns:
+        str: 提取的表格内容，如果提取失败则返回错误信息
+    """
     return _process_image_with_model(
         image_path=image_path,
         model=model,
@@ -441,9 +556,9 @@ def extract_table_from_image(
         prompt_text=extract_table_prompt if not extract_table_prompt_path else None,
         api_key=api_key,
         detail="high",
-        post_process_func=extract_markdown_content
+        post_process_func=extract_markdown_content,
+        timeout=timeout
     )
-
 
 
 if __name__ == "__main__" and __file__ == "image_to_text.py":

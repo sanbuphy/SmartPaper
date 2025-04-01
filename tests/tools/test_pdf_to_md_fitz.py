@@ -9,7 +9,7 @@ from tools.everything_to_text.pdf_to_md_pdfplumber import process_pdf
 
 def test_pdf_to_md_conversion():
     # 定义测试文件和输出路径
-    test_pdf_path = "./test_datas/test_pdf_to_md_fitz.pdf"
+    test_pdf_path = "test_datas/test_pdf_to_md_pdfplumber.pdf"
     output_dir = "./output"
     
     # 获取输入文件名（不含扩展名）

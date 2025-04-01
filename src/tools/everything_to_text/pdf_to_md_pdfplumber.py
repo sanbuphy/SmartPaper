@@ -1,6 +1,8 @@
 import os
 import pdfplumber
 import io
+import base64
+import json
 from pathlib import Path
 import re
 import asyncio
@@ -8,6 +10,7 @@ import concurrent.futures
 import time
 from datetime import datetime
 from PIL import Image
+import uuid  # 添加UUID模块导入
 
 from src.tools.everything_to_text.image_to_text import describe_image, get_image_title
 
@@ -24,16 +27,19 @@ def sanitize_filename(filename: str) -> str:
     """
     return re.sub(r'[\\/*?:"<>|]', "_", filename)
 
-def extract_text(pdf_path: str, output_dir: str = None) -> str:
+def extract_text(pdf_path: str, output_dir: str = None) -> dict:
     """
-    从PDF文件中提取文本
+    从PDF文件中提取文本，直接生成Markdown格式内容
     
     Args:
         pdf_path (str): PDF文件路径
         output_dir (str, optional): 输出目录，如果不指定则使用当前目录
     
     Returns:
-        str: 输出文本文件的完整路径，格式为"{pdf文件名}_text.txt"，用于后续处理或查看
+        dict: 包含以下键的字典：
+            - text_content (str): Markdown格式的文本内容
+            - metadata (dict): 包含标题等元数据
+            - images (list): 提取的图片信息列表
     """
     if output_dir is None:
         output_dir = os.getcwd()
@@ -43,70 +49,74 @@ def extract_text(pdf_path: str, output_dir: str = None) -> str:
     
     # 获取PDF文件名（不含扩展名）
     pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
+    title = pdf_name  # 使用文件名作为标题
     
-    # 输出文本文件路径
-    output_text_path = os.path.join(output_dir, f"{pdf_name}_text.txt")
-    
-    # 提取文本
-    with pdfplumber.open(pdf_path) as pdf:
-        with open(output_text_path, 'w', encoding='utf-8') as text_file:
-            for page_num, page in enumerate(pdf.pages):
-                text = page.extract_text() or ""
-                text_file.write(f"--- Page {page_num + 1} ---\n")
-                text_file.write(text)
-                text_file.write("\n\n")
-    
-    print(f"文本已提取到: {output_text_path}")
-    return output_text_path
-
-def extract_images(pdf_path: str, output_dir: str = None) -> list:
-    """
-    从PDF文件中提取图片
-    
-    Args:
-        pdf_path (str): PDF文件路径
-        output_dir (str, optional): 输出目录，如果不指定则使用当前目录
-    
-    Returns:
-        list[str]: 提取的图片文件路径列表，每个元素为一张图片的完整路径。
-                   图片保存在output_dir/images/目录下，
-                   文件名格式为"page{页码}_img{图片索引}.png"
-    """
-    if output_dir is None:
-        output_dir = os.getcwd()
-    
-    # 确保输出目录存在
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # 获取PDF文件名（不含扩展名）
-    pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
-    
-    # 创建图片目录
+    # 图片存储目录
     images_dir = os.path.join(output_dir, "images")
     os.makedirs(images_dir, exist_ok=True)
     
-    # 记录提取的图片文件路径
-    image_paths = []
+    # 用于存储图片信息的字典
+    image_dict = {}
+    # 用于返回的图片信息列表
+    image_list = []
+    
+    md_content = f"# {title}\n\n"
     
     with pdfplumber.open(pdf_path) as pdf:
         for page_num, page in enumerate(pdf.pages):
+            md_content += f"## 第{page_num + 1}页\n\n"
+            
+            # 提取文本
+            text = page.extract_text() or ""
+            md_content += f"{text}\n\n"
+            
+            # 提取图片
             for img_index, image_obj in enumerate(page.images):
                 try:
-                    # 生成图片文件名
-                    image_filename = f"page{page_num + 1}_img{img_index + 1}.png"
+                    # 生成唯一的UUID标识符
+                    img_uuid = str(uuid.uuid4())[:8]  # 使用UUID前8位作为唯一标识
+                    
+                    # 生成图片文件名和键名，加入UUID确保唯一性
+                    image_key = f"page{page_num + 1}_img{img_index + 1}_{img_uuid}"
+                    image_filename = f"{image_key}.png"
                     image_path = os.path.join(images_dir, image_filename)
                     
                     # 保存图像
                     im = Image.open(io.BytesIO(image_obj["stream"].get_data()))
                     im.save(image_path)
                     
-                    image_paths.append(image_path)
+                    # 转换为base64
+                    with open(image_path, "rb") as img_file:
+                        img_data = base64.b64encode(img_file.read()).decode('utf-8')
+                    
+                    # 存储图片信息
+                    image_dict[image_key] = img_data
+                    image_list.append({
+                        "key": image_key,
+                        "path": image_path,
+                        "filename": image_filename
+                    })
+                    
+                    # 在Markdown中添加图片引用，这里使用image_key作为图片标识符
+                    md_content += f"![{image_key}]({image_filename})\n\n"
+                    
                 except Exception as e:
                     print(f"提取图片时出错: {e}")
+            
+            md_content += "---\n\n"
     
-    if image_paths:
-        print(f"共提取了 {len(image_paths)} 张图片")
-    return image_paths
+    # 将图片的base64数据保存到JSON文件
+    json_path = os.path.join(output_dir, f"{pdf_name}_images.json")
+    with open(json_path, 'w', encoding='utf-8') as json_file:
+        json.dump(image_dict, json_file)
+    
+    print(f"处理完成，共提取了 {len(image_list)} 张图片")
+    
+    return {
+        "text_content": md_content,
+        "metadata": {"title": title},
+        "images": image_list
+    }
 
 async def process_image_description_and_title(image_path: str, index: int = None, total: int = None, api_key: str = None) -> dict:
     """
@@ -188,36 +198,30 @@ async def process_image_async(img_path: str, output_dir: str, index: int = None,
         'desc': result['description']
     }
 
-async def generate_markdown_report_async(text_path: str, image_paths: list, output_dir: str, api_key: str = None) -> str:
+async def generate_markdown_report_async(text_content_dict: dict, image_paths: list, output_dir: str, api_key: str = None) -> str:
     """
     异步生成包含文本和图片的Markdown报告
     
     Args:
-        text_path (str): 提取的文本文件路径
+        text_content_dict (dict): 包含文本内容的字典，格式为extract_text函数返回的格式
+            - text_content (str): Markdown格式的文本内容
+            - metadata (dict): 包含标题等元数据
+            - images (list): 提取的图片信息列表
         image_paths (list[str]): 提取的图片路径列表
         output_dir (str): 输出目录路径
         api_key (str, optional): API密钥，用于图像处理API调用
     
     Returns:
         str: 生成的Markdown报告文件的完整路径。
-             此文件包含了按页组织的PDF内容，每页包括:
-             - 页码标题
-             - 该页面的图片(如果有)及其描述
-             - 该页面的文本内容
     """
-    # 获取PDF文件名（不含扩展名）
-    pdf_name = os.path.basename(text_path).replace("_text.txt", "")
+    # 从text_content_dict中获取标题
+    pdf_name = text_content_dict["metadata"]["title"]
     
     # 输出Markdown文件路径
     output_md_path = os.path.join(output_dir, f"{pdf_name}.md")
     
-    # 读取提取的文本
-    with open(text_path, 'r', encoding='utf-8') as text_file:
-        all_text = text_file.read()
-    
-    # 按页分割文本
-    pages = all_text.split("--- Page ")
-    pages = [page for page in pages if page.strip()]  # 移除空页
+    # 获取已有的Markdown内容
+    md_content = text_content_dict["text_content"]
     
     # 一次性处理所有图片
     total_images = len(image_paths)
@@ -233,54 +237,135 @@ async def generate_markdown_report_async(text_path: str, image_paths: list, outp
     total_time = end_time - start_time
     avg_time = total_time / total_images if total_images else 0
     
-    # 将处理结果转换为字典，以便于查找
-    image_info_dict = {os.path.basename(img_info['path']): img_info for img_info in all_processed_images}
+    # 将处理结果转换为多种映射方式的字典，提高匹配成功率
+    image_info_dict = {}
+    page_img_pattern = re.compile(r'page(\d+)_img(\d+)')
+    
+    for img_info in all_processed_images:
+        basename = os.path.basename(img_info['path'])
+        # 使用完整文件名作为键
+        image_info_dict[basename] = img_info
+        
+        # 尝试提取页码和图片索引信息，创建额外的键
+        match = page_img_pattern.search(basename)
+        if match:
+            page_num = match.group(1)
+            img_num = match.group(2)
+            # 使用"page{页码}_img{索引}"格式作为额外键
+            page_img_key = f"page{page_num}_img{img_num}"
+            image_info_dict[page_img_key] = img_info
     
     print(f"\n🎉 所有图片处理完成! 总耗时: {total_time:.2f}秒, 平均每张: {avg_time:.2f}秒")
     
+    # 调试信息
+    print(f"图片信息字典键值: {list(image_info_dict.keys())}")
+    
+    # 修改Markdown内容中的图片引用格式
+    # 更复杂的正则表达式，可以匹配各种图片引用格式
+    img_pattern = r'!\[(.*?)\]\((.*?)\)\s*'
+    
+    def replace_image_reference(match):
+        alt_text = match.group(1)
+        img_path = match.group(2)
+        img_filename = os.path.basename(img_path)
+        
+        # 调试信息
+        print(f"尝试匹配图片: alt_text={alt_text}, filename={img_filename}")
+        
+        # 查找对应的图片文件
+        matching_info = None
+        
+        # 1. 尝试直接用文件名匹配
+        if img_filename in image_info_dict:
+            matching_info = image_info_dict[img_filename]
+        # 2. 尝试用alt_text匹配
+        elif alt_text in image_info_dict:
+            matching_info = image_info_dict[alt_text]
+        # 3. 尝试提取alt_text中的页码和图片索引
+        else:
+            alt_match = page_img_pattern.search(alt_text)
+            if alt_match:
+                page_img_key = f"page{alt_match.group(1)}_img{alt_match.group(2)}"
+                if page_img_key in image_info_dict:
+                    matching_info = image_info_dict[page_img_key]
+        
+        # 找不到匹配，则使用第一个可用的图片信息（备选方案）
+        if not matching_info and all_processed_images:
+            # 如果找不到匹配，默认使用第一张图片的信息
+            print(f"⚠️ 未找到图片 {img_filename} 的匹配信息，使用第一张图片的信息")
+            matching_info = all_processed_images[0]
+        
+        if matching_info:
+            img_basename = os.path.basename(matching_info['path'])
+            # 使用正确的格式：标题作为alt文本，相对路径，描述作为引用块
+            return f"![{matching_info['title']}](./images/{img_basename})\n\n> {matching_info['desc']}\n\n"
+        else:
+            # 极端情况：如果没有任何匹配且没有任何处理过的图片
+            print(f"⚠️ 无法为图片 {img_filename} 找到任何匹配信息")
+            return f"![{alt_text}](./images/{img_filename})\n\n"
+    
+    # 替换所有图片引用
+    md_content_p = re.sub(img_pattern, replace_image_reference, md_content)
+    
+    # 写入增强后的Markdown文件
     with open(output_md_path, 'w', encoding='utf-8') as md_file:
-        # 遍历每一页，按页码组织内容
-        for i, page_content in enumerate(pages):
-            page_num = i + 1
-            md_file.write(f"## 第{page_num}页\n\n")
-            md_file.write("---\n\n")
-            
-            # 根据页码筛选当前页面的图片
-            # page_images: list[str] - 存储当前页的图片路径列表
-            # 筛选条件: 文件名中包含"page{页码}_"的图片
-            page_images = [img for img in image_paths if f"page{page_num}_" in img]
-            
-            # 处理当前页面的图片并添加到Markdown文档
-            if page_images:
-                for img_path in page_images:
-                    # img_basename: str - 获取图片的文件名(不含路径)
-                    img_basename = os.path.basename(img_path)
-                    
-                    # 检查图片是否已被成功处理并有对应的信息
-                    if img_basename in image_info_dict:
-                        # img_info: dict - 包含图片的路径、标题和描述信息
-                        img_info = image_info_dict[img_basename]
-                        
-                        # 以Markdown格式添加图片
-                        # ![图片标题](图片相对路径) - Markdown图片语法
-                        md_file.write(f"![{img_info['title']}]({img_info['rel_path']})\n")
-                        
-                        # 添加图片标题和描述作为引用块
-                        # > 标题：描述 - Markdown引用语法
-                        md_file.write(f"> {img_info['title']}：{img_info['desc']}\n\n")
-            
-            # 处理并添加页面文本内容
-            # text: str - 当前页的文本内容(移除页码标记)
-            # 如果页面内容包含换行符，则获取第一个换行符后的所有内容(移除页码标记行)
-            text = page_content.split("\n", 1)[1] if "\n" in page_content else page_content
-            md_file.write(f"{text}\n\n")
-            
-            # 添加分隔线作为页面结束标记
-            md_file.write("---\n\n")
+        md_file.write(md_content_p)
     
     # 输出处理完成的信息
     print(f"Markdown报告已生成: {output_md_path}")
     return output_md_path
+
+def extract_images(pdf_path: str, output_dir: str = None) -> list:
+    """
+    从PDF文件中提取图片
+    
+    Args:
+        pdf_path (str): PDF文件路径
+        output_dir (str, optional): 输出目录，如果不指定则使用当前目录
+    
+    Returns:
+        list[str]: 提取的图片文件路径列表，每个元素为一张图片的完整路径。
+                   图片保存在output_dir/images/目录下，
+                   文件名格式为"page{页码}_img{图片索引}_{uuid}.png"
+    """
+    if output_dir is None:
+        output_dir = os.getcwd()
+    
+    # 确保输出目录存在
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # 获取PDF文件名（不含扩展名）
+    pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
+    
+    # 创建图片目录
+    images_dir = os.path.join(output_dir, "images")
+    os.makedirs(images_dir, exist_ok=True)
+    
+    # 记录提取的图片文件路径
+    image_paths = []
+    
+    with pdfplumber.open(pdf_path) as pdf:
+        for page_num, page in enumerate(pdf.pages):
+            for img_index, image_obj in enumerate(page.images):
+                try:
+                    # 生成唯一的UUID标识符
+                    img_uuid = str(uuid.uuid4())[:8]  # 使用UUID前8位作为唯一标识
+                    
+                    # 生成带有UUID的图片文件名
+                    image_filename = f"page{page_num + 1}_img{img_index + 1}_{img_uuid}.png"
+                    image_path = os.path.join(images_dir, image_filename)
+                    
+                    # 保存图像
+                    im = Image.open(io.BytesIO(image_obj["stream"].get_data()))
+                    im.save(image_path)
+                    
+                    image_paths.append(image_path)
+                except Exception as e:
+                    print(f"提取图片时出错: {e}")
+    
+    if image_paths:
+        print(f"共提取了 {len(image_paths)} 张图片")
+    return image_paths
 
 async def process_pdf_async(pdf_path: str, output_dir: str = None, api_key: str = None) -> tuple:
     """
@@ -292,13 +377,12 @@ async def process_pdf_async(pdf_path: str, output_dir: str = None, api_key: str 
         api_key (str, optional): API密钥，用于图像处理API调用。如果不提供，将尝试从环境变量读取。
     
     Returns:
-        tuple[str, list[str], str]: 包含三个元素的元组:
-            - text_path (str): 提取的文本文件路径，保存了PDF的纯文本内容
-            - image_paths (list[str]): 提取的所有图片路径列表，每个元素为一张图片的完整路径
-            - md_path (str): 生成的Markdown报告路径，整合了文本和图片的完整报告
+        tuple[dict, list[str], str]: 包含三个元素的元组:
+            - text_content_dict (dict): 包含文本内容的字典
+            - image_paths (list[str]): 提取的所有图片路径列表
+            - md_path (str): 生成的Markdown报告路径
     """
     # 如果未指定输出目录，则创建带时间戳的默认目录
-    # timestamp: str - 当前时间的格式化字符串，用于生成唯一目录名
     if output_dir is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         # 在当前工作目录下创建带时间戳的子目录
@@ -311,26 +395,22 @@ async def process_pdf_async(pdf_path: str, output_dir: str = None, api_key: str 
     print(f"开始处理PDF: {os.path.basename(pdf_path)}")
     
     # 获取当前运行中的事件循环，用于执行异步操作
-    # loop: asyncio.AbstractEventLoop - 当前的事件循环对象
     loop = asyncio.get_running_loop()
     
-    # 使用线程池执行提取文本操作(I/O密集型任务)
-    # text_path: str - 提取的文本文件保存路径
-    text_path = await loop.run_in_executor(None, extract_text, pdf_path, output_dir)
+    # 使用线程池执行提取文本操作
+    text_content_dict = await loop.run_in_executor(None, extract_text, pdf_path, output_dir)
     
-    # 使用线程池执行提取图片操作(I/O密集型任务)
-    # image_paths: list[str] - 提取的所有图片文件路径列表
+    # 使用线程池执行提取图片操作
     image_paths = await loop.run_in_executor(None, extract_images, pdf_path, output_dir)
     
     # 异步生成集成了文本和图片的Markdown报告
-    # md_path: str - 生成的Markdown报告文件路径
-    md_path = await generate_markdown_report_async(text_path, image_paths, output_dir, api_key)
+    md_path = await generate_markdown_report_async(text_content_dict, image_paths, output_dir, api_key)
     
     # 输出处理完成的信息
     print(f"处理完成! 所有文件已保存到: {output_dir}")
     
-    # 返回处理结果的三个路径组成的元组
-    return text_path, image_paths, md_path
+    # 返回处理结果
+    return text_content_dict, image_paths, md_path
 
 def process_pdf(pdf_path: str, output_dir: str = None, api_key: str = None) -> tuple:
     """
@@ -343,12 +423,52 @@ def process_pdf(pdf_path: str, output_dir: str = None, api_key: str = None) -> t
         api_key (str, optional): API密钥，用于图像处理API调用。如果不提供，将尝试从环境变量读取。
     
     Returns:
-        tuple[str, list[str], str]: 包含三个元素的元组:
-            - text_path (str): 提取的文本文件的完整路径，文件包含PDF的纯文本内容
-            - image_paths (list[str]): 提取的所有图片的路径列表，每个元素为一张图片的完整路径
-            - md_path (str): 生成的Markdown报告的完整路径，该报告整合了文本和图片内容
+        tuple[dict, list[str], str]: 包含三个元素的元组:
+            - text_content_dict (dict): 包含文本内容的字典
+            - image_paths (list[str]): 提取的所有图片的路径列表
+            - md_path (str): 生成的Markdown报告的完整路径
     """
-    return asyncio.run(process_pdf_async(pdf_path, output_dir, api_key))
+    return asyncio.run(process_pdf_async(pdf_path, output_dir, api_key)
+
+def pdfplumber_pdf2md(
+    file_path: str,
+    llm_client: Any = None,
+    llm_model: str = None,
+    config: Dict = None,
+    ocr_enabled: bool = False,
+) -> Dict:
+    """将PDF文件转换为Markdown，兼容注册转换器接口
+    
+    这个函数是为了与转换器注册系统兼容而创建的包装函数，
+    接口与markitdown_pdf2md保持一致。
+    
+    Args:
+        file_path (str): PDF文件路径
+        llm_client (Any, optional): LLM客户端，用于图像描述等高级功能，在本实现中不使用
+        llm_model (str, optional): LLM模型名称，在本实现中不使用
+        config (Dict, optional): 配置信息，可用于传递api_key
+        ocr_enabled (bool, optional): 是否启用OCR功能，在本实现中不使用
+    
+    Returns:
+        Dict: 包含转换结果的字典，格式与process_pdf函数一致
+    """
+    from typing import Dict, Any, Optional
+    
+    # 从config中获取api_key，如果有的话
+    api_key = None
+    if config and 'api_key' in config:
+        api_key = config['api_key']
+    
+    # 确定输出目录
+    output_dir = None
+    if config and 'output_dir' in config:
+        output_dir = config['output_dir']
+    
+    # 调用实际的处理函数
+    text_content_dict, _, md_path = process_pdf(file_path, output_dir, api_key)
+    
+    # 返回结果
+    return text_content_dict
 
 def main() -> None:
     """
@@ -370,4 +490,5 @@ def main() -> None:
     process_pdf(args.pdf_path, args.output, args.api_key)
 
 if __name__ == "__main__":
-    main()
+    # main()
+    process_pdf("./test_pdf_to_md_pdfplumber.pdf", "./output", None)
