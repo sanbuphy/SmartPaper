@@ -1,0 +1,6 @@
+[submodule "src/tools/src/tools/paddlepaddle/x_pdf2md"]
+	path = src/tools/src/tools/paddlepaddle/x_pdf2md
+	url = https://github.com/li-xiu-qi/x-pdf2md.git
+[submodule "src/tools/paddlepaddle/x_pdf2md"]
+	path = src/tools/paddlepaddle/x_pdf2md
+	url = https://github.com/li-xiu-qi/x-pdf2md.git
