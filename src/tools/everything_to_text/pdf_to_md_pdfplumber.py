@@ -1,4 +1,5 @@
 import os
+from typing import Any, Dict
 import pdfplumber
 import io
 import base64
@@ -13,6 +14,7 @@ from PIL import Image
 import uuid  # 添加UUID模块导入
 
 from src.tools.everything_to_text.image_to_text import describe_image, get_image_title
+from src.tools.db.image_store import get_image_store, get_pdf_cache  # 导入图片存储模块
 
 
 def sanitize_filename(filename: str) -> str:
@@ -23,7 +25,7 @@ def sanitize_filename(filename: str) -> str:
         filename (str): 需要清理的原始文件名
     
     Returns:
-        str: 清理后的文件名，所有不合法字符(\ / * ? : " < > |)已被替换为下划线
+        str: 清理后的文件名，所有不合法字符(\\ / * ? : " < > |)已被替换为下划线
     """
     return re.sub(r'[\\/*?:"<>|]', "_", filename)
 
@@ -33,7 +35,7 @@ def extract_text(pdf_path: str, output_dir: str = None) -> dict:
     
     Args:
         pdf_path (str): PDF文件路径
-        output_dir (str, optional): 输出目录，如果不指定则使用当前目录
+        output_dir (str, optional): 输出目录，如果不指定则使用./outputs目录
     
     Returns:
         dict: 包含以下键的字典：
@@ -42,7 +44,9 @@ def extract_text(pdf_path: str, output_dir: str = None) -> dict:
             - images (list): 提取的图片信息列表
     """
     if output_dir is None:
-        output_dir = os.getcwd()
+        output_dir = os.path.join(".", "outputs")
+    
+    print("本次输出目录:", output_dir)
     
     # 确保输出目录存在
     os.makedirs(output_dir, exist_ok=True)
@@ -55,7 +59,10 @@ def extract_text(pdf_path: str, output_dir: str = None) -> dict:
     images_dir = os.path.join(output_dir, "images")
     os.makedirs(images_dir, exist_ok=True)
     
-    # 用于存储图片信息的字典
+    # 初始化集中式图片存储数据库
+    image_store = get_image_store()  # 修改：不再传入参数
+    
+    # 用于存储图片信息的字典(临时)
     image_dict = {}
     # 用于返回的图片信息列表
     image_list = []
@@ -89,8 +96,10 @@ def extract_text(pdf_path: str, output_dir: str = None) -> dict:
                     with open(image_path, "rb") as img_file:
                         img_data = base64.b64encode(img_file.read()).decode('utf-8')
                     
-                    # 存储图片信息
+                    # 存储图片信息到临时字典
                     image_dict[image_key] = img_data
+                    
+                    # 保存到图片列表
                     image_list.append({
                         "key": image_key,
                         "path": image_path,
@@ -105,12 +114,11 @@ def extract_text(pdf_path: str, output_dir: str = None) -> dict:
             
             md_content += "---\n\n"
     
-    # 将图片的base64数据保存到JSON文件
-    json_path = os.path.join(output_dir, f"{pdf_name}_images.json")
-    with open(json_path, 'w', encoding='utf-8') as json_file:
-        json.dump(image_dict, json_file)
+    # 将图片的base64数据保存到SQLite数据库
+    saved_count = image_store.save_images(image_dict, pdf_name)  # 修改：添加pdf_name参数
     
-    print(f"处理完成，共提取了 {len(image_list)} 张图片")
+    print(f"处理完成，共提取了 {len(image_list)} 张图片，成功保存到数据库: {saved_count} 张")
+    print("text_content_dict:", md_content[:100], "...")  # 打印前100个字符
     
     return {
         "text_content": md_content,
@@ -341,6 +349,9 @@ def extract_images(pdf_path: str, output_dir: str = None) -> list:
     images_dir = os.path.join(output_dir, "images")
     os.makedirs(images_dir, exist_ok=True)
     
+    # 初始化集中式图片存储数据库
+    image_store = get_image_store()  # 修改：不再传入参数
+    
     # 记录提取的图片文件路径
     image_paths = []
     
@@ -352,19 +363,25 @@ def extract_images(pdf_path: str, output_dir: str = None) -> list:
                     img_uuid = str(uuid.uuid4())[:8]  # 使用UUID前8位作为唯一标识
                     
                     # 生成带有UUID的图片文件名
-                    image_filename = f"page{page_num + 1}_img{img_index + 1}_{img_uuid}.png"
+                    image_key = f"page{page_num + 1}_img{img_index + 1}_{img_uuid}"
+                    image_filename = f"{image_key}.png"
                     image_path = os.path.join(images_dir, image_filename)
                     
                     # 保存图像
                     im = Image.open(io.BytesIO(image_obj["stream"].get_data()))
                     im.save(image_path)
                     
+                    # 将base64编码存储到数据库
+                    with open(image_path, "rb") as img_file:
+                        img_data = base64.b64encode(img_file.read()).decode('utf-8')
+                    image_store.save_image(image_key, img_data, pdf_name)  # 修改：添加pdf_name参数
+                    
                     image_paths.append(image_path)
                 except Exception as e:
                     print(f"提取图片时出错: {e}")
     
     if image_paths:
-        print(f"共提取了 {len(image_paths)} 张图片")
+        print(f"共提取了 {len(image_paths)} 张图片并保存到数据库")
     return image_paths
 
 async def process_pdf_async(pdf_path: str, output_dir: str = None, api_key: str = None) -> tuple:
@@ -382,29 +399,61 @@ async def process_pdf_async(pdf_path: str, output_dir: str = None, api_key: str 
             - image_paths (list[str]): 提取的所有图片路径列表
             - md_path (str): 生成的Markdown报告路径
     """
+    # 记录开始处理时间
+    start_time = time.time()
+    
     # 如果未指定输出目录，则创建带时间戳的默认目录
     if output_dir is None:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        # 在当前工作目录下创建带时间戳的子目录
-        output_dir = os.path.join(os.getcwd(), f"pdf_extract_{timestamp}")
+        # 确保pdf_path是字符串类型
+        pdf_path_str = str(pdf_path)  # 将WindowsPath转换为字符串
+        
+        # 提取文件名（不含扩展名）用作目录名
+        # 适用于Windows和Unix路径
+        pdf_filename = os.path.basename(pdf_path_str)
+        pdf_name_no_ext = os.path.splitext(pdf_filename)[0]
+        
+        # 在当前工作目录下创建子目录
+        output_dir = os.path.join(os.getcwd(), "outputs", pdf_name_no_ext)
     
     # 确保输出目录存在，如果不存在则创建
     os.makedirs(output_dir, exist_ok=True)
     
     # 输出开始处理的信息，显示PDF文件名
-    print(f"开始处理PDF: {os.path.basename(pdf_path)}")
+    print(f"开始处理PDF: {os.path.basename(str(pdf_path))}")
     
     # 获取当前运行中的事件循环，用于执行异步操作
     loop = asyncio.get_running_loop()
     
+    # 记录文本提取开始时间
+    text_start_time = time.time()
     # 使用线程池执行提取文本操作
     text_content_dict = await loop.run_in_executor(None, extract_text, pdf_path, output_dir)
+    text_end_time = time.time()
+    text_duration = text_end_time - text_start_time
     
+    # 记录图片提取开始时间
+    image_start_time = time.time()
     # 使用线程池执行提取图片操作
     image_paths = await loop.run_in_executor(None, extract_images, pdf_path, output_dir)
+    image_end_time = time.time()
+    image_duration = image_end_time - image_start_time
     
+    # 记录生成Markdown报告开始时间
+    md_start_time = time.time()
     # 异步生成集成了文本和图片的Markdown报告
     md_path = await generate_markdown_report_async(text_content_dict, image_paths, output_dir, api_key)
+    md_end_time = time.time()
+    md_duration = md_end_time - md_start_time
+    
+    # 计算总处理时间
+    end_time = time.time()
+    total_duration = end_time - start_time
+    
+    # 输出各阶段和总处理时间
+    print(f"文本提取耗时: {text_duration:.2f}秒")
+    print(f"图片提取耗时: {image_duration:.2f}秒")
+    print(f"Markdown生成耗时: {md_duration:.2f}秒")
+    print(f"总处理耗时: {total_duration:.2f}秒")
     
     # 输出处理完成的信息
     print(f"处理完成! 所有文件已保存到: {output_dir}")
@@ -428,7 +477,7 @@ def process_pdf(pdf_path: str, output_dir: str = None, api_key: str = None) -> t
             - image_paths (list[str]): 提取的所有图片的路径列表
             - md_path (str): 生成的Markdown报告的完整路径
     """
-    return asyncio.run(process_pdf_async(pdf_path, output_dir, api_key)
+    return asyncio.run(process_pdf_async(pdf_path, output_dir, api_key))
 
 def pdfplumber_pdf2md(
     file_path: str,
@@ -454,6 +503,9 @@ def pdfplumber_pdf2md(
     """
     from typing import Dict, Any, Optional
     
+    # 记录开始处理时间
+    start_time = time.time()
+    
     # 从config中获取api_key，如果有的话
     api_key = None
     if config and 'api_key' in config:
@@ -464,8 +516,50 @@ def pdfplumber_pdf2md(
     if config and 'output_dir' in config:
         output_dir = config['output_dir']
     
+    # 获取文件名（不含扩展名）
+    pdf_name = os.path.splitext(os.path.basename(file_path))[0]
+    
+    # 检查是否有缓存
+    pdf_cache = get_pdf_cache()
+    
+    # 生成用于缓存查询的URL
+    url = f"file://{file_path}"
+    if config and 'url' in config:
+        url = config['url']  # 如果提供了URL，使用传入的URL
+    
+    # 尝试从缓存获取结果
+    cached_result = pdf_cache.get_cache(url)
+    if cached_result:
+        # 计算节省的时间
+        end_time = time.time()
+        cache_time = end_time - start_time
+        print(f"🎯 命中缓存! 加载 '{pdf_name}' 的缓存处理结果，耗时: {cache_time:.2f}秒")
+        
+        return {
+            "text_content": cached_result["text_content"],
+            "metadata": {"title": pdf_name},
+            "file_path": cached_result["output_dir"] + "/" + pdf_name + ".md" # 构造文件路径
+        }
+    
+    print(f"未命中缓存，开始处理PDF: {pdf_name}")
+    
     # 调用实际的处理函数
     text_content_dict, _, md_path = process_pdf(file_path, output_dir, api_key)
+    
+    # 保存到缓存 - 修复参数不匹配问题
+    if text_content_dict and "text_content" in text_content_dict:
+        pdf_cache.save_cache(
+            url=url,
+            pdf_name=pdf_name,
+            output_dir=os.path.dirname(md_path),
+            text_content=text_content_dict["text_content"],
+            has_images=len(text_content_dict.get("images", [])) > 0
+        )
+    
+    # 计算总处理时间
+    end_time = time.time()
+    total_duration = end_time - start_time
+    print(f"PDF转换完成，总处理耗时: {total_duration:.2f}秒")
     
     # 返回结果
     return text_content_dict

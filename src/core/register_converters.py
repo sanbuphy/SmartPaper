@@ -30,6 +30,13 @@ try:
 except ImportError:
     _has_pdfplumber = False
 
+try:
+    from src.tools.everything_to_text.pdf_to_md_fitz import fitz_pdf2md
+    
+    _has_fitz = True
+except ImportError:
+    _has_fitz = False
+
 
 def register_all_converters():
     """注册所有可用的转换器"""
@@ -44,6 +51,10 @@ def register_all_converters():
     # 注册 PDFPlumber 转换器
     if _has_pdfplumber:
         DocumentConverter.register("pdfplumber", pdfplumber_pdf2md)
+        
+    # 注册 Fitz(PyMuPDF) 转换器
+    if _has_fitz:
+        DocumentConverter.register("fitz", fitz_pdf2md)
 
     # 在这里添加更多转换器的注册...
 

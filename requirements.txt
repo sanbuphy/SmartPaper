@@ -20,6 +20,10 @@ tqdm>=4.66.1
 markitdown
 loguru
 
+# 数据库
+sqlite3==2.6.0  # SQLite数据库支持
+aiosqlite>=0.18.0  # 异步SQLite支持
+
 # 开发依赖
 pre-commit>=3.6.2
 black>=24.2.0

@@ -172,6 +172,14 @@ class SmartPaper:
                 )
                 logger.info(f"PDF转换完成，使用转换器: {converter_name}")
 
+                # 检查是否是从缓存加载的结果
+                if isinstance(result, dict) and result.get("from_cache", False):
+                    logger.info(f"使用缓存的PDF解析结果: {url}")
+                    result["file_info"] = {
+                        "from_cache": True,
+                        "file_path": os.path.join(result["cache_info"]["output_dir"], f"{result['cache_info']['pdf_name']}.md")
+                    }
+
                 # 处理文本内容
                 text_content = result["text_content"]
                 if "References" in text_content:
