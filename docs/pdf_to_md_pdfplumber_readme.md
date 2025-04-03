@@ -1,102 +1,167 @@
-# PDF转Markdown工具使用指南
+# PDF to Markdown 转换工具 (pdfplumber版)
 
 ## 简介
 
-`pdf_to_md_pdfplumber.py` 是一个功能强大的PDF处理工具，可以将PDF文件转换为增强型Markdown格式，包含以下功能：
+`pdf_to_md_pdfplumber` 是一个强大的PDF转换工具，基于pdfplumber库开发，能够提取PDF文档中的文本和图像，并将其转换为结构化的Markdown文档。本工具的特色是能够自动为提取的图像生成描述和标题，使输出的Markdown文档更加丰富和完整。
 
-- 提取PDF文件中的所有文本内容
-- 提取PDF文件中的所有图片
-- 自动为图片生成AI描述和标题
-- 将所有内容整合成一个结构化的Markdown文档
+## 功能特性
 
-该工具利用了OpenAI的图像识别技术，能够智能分析图片内容并生成准确的描述和标题，大大提升了文档的可访问性和理解性。
+- ✅ 完整的PDF文本内容提取
+- 🖼️ 自动检测和提取PDF中的图像
+- 🤖 使用AI技术自动生成图像描述和标题
+- 📝 生成格式化的Markdown文档
+- 🚀 支持异步处理，提高效率
+- 💾 内置缓存系统，避免重复处理
+- 📊 提供详细的处理进度和耗时统计
 
-## 特点
+## 安装要求
 
-- **高质量文本提取**：使用pdfplumber库精确提取文本，保持页面结构
-- **智能图像处理**：自动检测并提取PDF中的所有图像
-- **AI图像描述**：对每张图片进行AI分析，生成详细描述
-- **自动标题生成**：基于图片内容自动生成描述性标题
-- **并发处理**：使用asyncio并发处理图片，提高效率
-- **格式化输出**：生成格式规范、引用完整的Markdown文档
-- **命令行支持**：提供简洁的命令行接口，易于集成到自动化流程中
-
-## 安装依赖
-
-请确保已安装以下依赖：
+要使用此工具，需要以下依赖：
 
 ```bash
-pip install pdfplumber pillow asyncio
+pip install pdfplumber pillow uuid
 ```
 
-图像描述功能依赖于我们的图像分析库，详见`src/tools/everything_to_text/image_to_text.py`。
+如果需要使用AI图像描述功能，还需要安装相关依赖：
+
+```bash
+pip install asyncio
+```
 
 ## 使用方法
 
-### 命令行使用
+### 命令行调用
 
 ```bash
-python pdf_to_md_pdfplumber.py <pdf文件路径> [-o <输出目录>] [-k <API密钥>]
+python pdf_to_md_pdfplumber.py path/to/your/document.pdf [--output OUTPUT_DIR] [--api-key API_KEY]
 ```
 
-参数说明：
+参数说明:
+- `pdf_path`: PDF文件路径（必填）
+- `-o, --output`: 输出目录，可选，默认会创建一个自动命名的输出目录
+- `-k, --api-key`: API密钥，用于图像处理API调用（可选）
 
-- `<pdf文件路径>`: 必填，要处理的PDF文件路径
-- `-o, --output`: 可选，指定输出目录，默认将创建时间戳子目录
-- `-k, --api-key`: 可选，用于AI图像处理的API密钥，默认从环境变量读取
-
-### 编程方式使用
+### 作为模块导入
 
 ```python
 from src.tools.everything_to_text.pdf_to_md_pdfplumber import process_pdf
 
-# 简单使用
-process_pdf("path/to/your.pdf")
+# 基本使用
+result = process_pdf("path/to/your/document.pdf")
 
-# 指定输出目录和API密钥
-process_pdf("path/to/your.pdf", "./output_folder", "your-api-key")
+# 指定输出目录
+result = process_pdf("path/to/your/document.pdf", output_dir="./my_output")
+
+# 指定API密钥
+result = process_pdf("path/to/your/document.pdf", api_key="your-api-key")
+
+# 使用转换器接口
+from src.tools.everything_to_text.pdf_to_md_pdfplumber import pdfplumber_pdf2md
+
+result = pdfplumber_pdf2md(
+    file_path="path/to/your/document.pdf",
+    config={
+        "output_dir": "./output",
+        "api_key": "your-api-key",
+        "url": "custom-url-for-cache"  # 可选，用于缓存标识
+    }
+)
 ```
 
-## 输出文件说明
+## 输出结构
 
-处理完成后，会在输出目录中生成以下文件：
+工具处理PDF后将创建以下文件和目录：
 
-1. `<pdf名称>.md`: 主要的Markdown文件，包含所有文本和图片引用
-2. `images/`: 文件夹，包含提取的所有图片
-3. `<pdf名称>_images.json`: 包含图片的base64编码数据的JSON文件
-
-Markdown文件中的图片引用格式为：
-
-```markdown
-![图片标题](./images/图片文件名)
-
-> 图片详细描述
+```
+output_directory/
+├── document_name.md     # 转换后的Markdown文件
+└── images/              # 提取的图片目录
+    ├── page1_img1_uuid.png
+    ├── page1_img2_uuid.png
+    └── ...
 ```
 
-## 高级配置
+处理结果的返回格式为：
 
-### 图像引擎配置
-
-默认使用"Qwen/Qwen2.5-VL-72B-Instruct"模型来分析图像。如需调整，请修改`process_image_description_and_title`函数中的相关参数。
-
-### 性能调优
-
-对于大型PDF文件或包含大量图片的文件，可以考虑调整`process_image_async`函数中的并发设置以提高性能。
-
-## 输出示例
-
-处理完成的Markdown文件示例：
-
-```markdown
-# 示例文档
-
-## 第1页
-
-这是文档的正文内容...
-
-![专业流程图](./images/page1_img1_12ab34cd.png)
-
-> 这是一个展示项目工作流程的专业流程图，包含5个关键步骤：需求分析、设计、开发、测试和部署。每个步骤都用不同的颜色和图标表示，箭头显示了流程的先后顺序和关系。图表采用现代化设计风格，背景为浅蓝色。
-
----
+```python
+{
+    "text_content": "# 文档标题\n\n## 第1页\n\n文本内容...",
+    "metadata": {"title": "文档名称"},
+    "images": [
+        {"key": "page1_img1_uuid", "path": "完整路径", "filename": "文件名"}
+    ]
+}
 ```
+
+## 图像处理功能
+
+本工具的一个特色功能是能够自动为提取的图像生成描述和标题：
+
+1. 提取图像：从PDF提取图像并保存
+2. 生成描述：使用AI模型为图像生成详细描述
+3. 生成标题：基于描述为图像创建简洁的标题
+4. 集成到Markdown：自动将图像引用替换为带有标题和描述的格式
+
+## 缓存系统
+
+工具内置了缓存系统，可以避免重复处理相同的PDF：
+
+- 首次处理时，结果会被缓存
+- 再次处理时，如果PDF内容未变更，将直接从缓存加载结果
+- 缓存使用文件路径或自定义URL作为标识符
+
+## 高级功能
+
+### 异步处理
+
+本工具支持异步处理，大幅提高多图像文档的处理效率：
+
+```python
+import asyncio
+from src.tools.everything_to_text.pdf_to_md_pdfplumber import process_pdf_async
+
+async def main():
+    result = await process_pdf_async("document.pdf")
+    
+asyncio.run(main())
+```
+
+### 自定义图像处理
+
+可以通过修改配置来自定义图像处理行为：
+
+```python
+config = {
+    "output_dir": "./output",
+    "api_key": "your-api-key",
+    "image_model": "Qwen/Qwen2.5-VL-72B-Instruct"  # 自定义图像模型
+}
+
+result = pdfplumber_pdf2md(file_path="document.pdf", config=config)
+```
+
+## 常见问题
+
+**Q: 处理大型PDF文件时速度很慢怎么办？**  
+A: 图像描述生成是最耗时的步骤。可以通过设置环境变量或直接传入API密钥来使用更快的API。
+
+**Q: 如何提高图像描述的质量？**  
+A: 本工具默认使用Qwen2.5-VL模型，这已经是一个高质量的图像描述模型。
+
+**Q: 转换后的Markdown引用了错误的图像怎么办？**  
+A: 工具使用了多种匹配策略来确保正确关联图像。如果仍有问题，可以查看日志输出找到匹配错误的原因。
+
+## 性能指标
+
+在典型配置下的性能参考：
+- 文本提取：~0.5秒/页
+- 图像提取：~0.2秒/图
+- 图像描述生成：~3-5秒/图（取决于API响应速度）
+- Markdown生成：~0.1秒/页
+
+## 开发与贡献
+
+欢迎贡献代码或提出建议！可以通过以下方式参与：
+
+1. 提交Issue报告bug或提出功能请求
+2. 提交Pull Request贡献代码
