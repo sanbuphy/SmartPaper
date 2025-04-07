@@ -32,24 +32,45 @@ SmartPaper 是一个智能论文阅读和分析工具,支持多种 LLM 接口(�
 - 请求次数限制保护
 - 支持自定义文档转换器（查看[文档转换器注册指南](docs/register_document_converter.md)）
 
-## 快速开始
+## 准备工作
 
-### 1. 安装依赖
+### 1. 克隆项目
+
+```bash
+# 克隆主仓库及其子模块
+git clone --recursive https://github.com/yourusername/SmartPaper.git
+cd SmartPaper
+```
+
+### 2. 安装后端依赖
 
 ```bash
 pip install -r requirements.txt
 ```
 
-#### 1.1 解决Python 3.10 以下markitdown兼容性问题（由于官方源码不兼容python3.10以下，此版本为官方源码修改后的兼容版本）
+#### 2.1 解决Python 3.10 以下markitdown兼容性问题（由于官方源码不兼容python3.10以下，此版本为官方源码修改后的兼容版本）
 ```bash
 # 卸载之前安装的markitdown
 pip uninstall markitdown
 git clone https://github.com/jingsongliujing/markitdown.git
 cd markitdown
 pip install -e packages/markitdown
+cd ..
+```
+### 3.安装前端依赖
+
+1. 进入frontend目录:
+
+```bash
+cd frontend
 ```
 
-### 2. 配置
+2. 安装依赖:
+
+```bash
+npm install
+```
+### 4. 配置
 
 1. 复制并修改配置文件:
 
@@ -68,9 +89,44 @@ cp config/config.yaml.example config/config.yaml
     max_tokens: 8192
 ```
 
-### 3. 使用方法
+## 项目启动
 
-#### 命令行使用
+### 后端启动
+
+1. 进入SmartPaper目录:
+
+```bash
+cd SmartPaper
+```
+
+2启动FastAPI后端服务:
+
+```bash
+python backend.py
+```
+
+服务将在 http://localhost:8000 启动，可以通过 http://localhost:8000/docs 访问API文档（暂无）。
+
+### 前端启动
+
+1. 进入前端目录:
+
+```bash
+cd frontend
+```
+
+
+2.启动开发服务器:
+
+```bash
+npm run dev
+```
+
+前端开发服务器将在 http://localhost:5173 启动，可以通过浏览器访问。
+
+
+
+## 命令行使用
 
 1. 查看帮助:
 
@@ -194,6 +250,51 @@ python cli_get_prompt_mode_paper.py -p yuanbao
 - [配置文件使用说明](docs/config_yaml_guide.md) - 详细介绍配置文件结构、参数说明及配置注意事项
 - [文档转换器注册指南](docs/register_document_converter.md) - 介绍如何开发和注册自定义文档转换器
 
+## 前后端启动说明
+
+### 后端启动
+
+1. 进入SmartPaper目录:
+
+```bash
+cd SmartPaper
+```
+
+2. 安装依赖:
+
+```bash
+pip install -r requirements.txt
+```
+
+3. 启动后端服务:
+
+```bash
+run main.py
+```
+
+### 前端启动
+
+1. 进入frontend目录:
+
+```bash
+cd frontend
+```
+
+2. 安装依赖:
+
+```bash
+npm install
+```
+
+3. 启动开发服务器:
+
+```bash
+npm run dev
+```
+
+4. 前端服务将在本地启动，通常在 http://localhost:5173
+
+
 ## 注意事项
 
 1. API 密钥:
@@ -309,6 +410,8 @@ SKIP=flake8 git commit -m "your commit message"
 - [散步](https://github.com/sanbuphy)  (Datawhale成员)
 - [筱可](https://github.com/li-xiu-qi) (datawhale应用发烧友)
 - [jingsongliujing](https://github.com/jingsongliujing)
+- [冬灵](https://github.com/DM-llm)  (Datawhale成员)
+- [imagist](https://github.com/imagist13)  
 
 <div align=center style="margin-top: 30px;">
   <a href="https://github.com/sanbuphy/SmartPaper">
