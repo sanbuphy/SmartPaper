@@ -9,9 +9,8 @@ import os
 import sys
 import pytest
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.tools.everything_to_text.pdf_to_md_mineru import download_and_setup_models
+from tools.everything_to_text.pdf_to_md_mineru import download_and_setup_models
 
 
 def test_download_and_setup_models():

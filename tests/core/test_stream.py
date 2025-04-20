@@ -7,12 +7,11 @@
 """
 
 import os
-import sys
 from loguru import logger
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 import pytest
-from src.core.llm_wrapper import LLMWrapper
+from core.llm_wrapper import LLMWrapper
 from unittest.mock import MagicMock, patch
 from langchain.schema import AIMessage, HumanMessage
 import yaml
@@ -37,7 +36,7 @@ def mock_config():
 
 @pytest.fixture
 def processor(mock_config):
-    with patch("src.utils.llm_adapter.ChatOpenAI"):
+    with patch("utils.llm_adapter.ChatOpenAI"):
         return LLMWrapper(mock_config)
 
 

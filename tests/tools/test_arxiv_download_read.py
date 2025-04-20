@@ -4,15 +4,10 @@
 """
 
 import os
-import sys
 import pytest
 import tempfile
 import requests
-from typing import Dict
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
-from src.core.document_converter import convert_to_text
+from core.document_converter import convert_to_text
 
 
 @pytest.fixture
@@ -41,7 +36,6 @@ def config():
 def test_arxiv_download_success(temp_dir, arxiv_paper):
     """测试成功下载arXiv论文"""
     pdf_path = os.path.join(temp_dir, f"{arxiv_paper['paper_id']}.pdf")
-
     response = requests.get(arxiv_paper["url"])
     assert response.status_code == 200
 

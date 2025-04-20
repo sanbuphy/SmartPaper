@@ -6,9 +6,8 @@ import sys
 import pytest
 import os
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.utils.get_abs_path import get_abs_path
+from utils.get_abs_path import get_abs_path
 
 # 创建测试数据目录和文件
 test_data_dir = os.path.join(os.path.dirname(__file__), "test_get_abs_path_datas")

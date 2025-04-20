@@ -10,10 +10,10 @@ import shutil
 import pytest
 
 # 将项目根目录添加到 sys.path，以便导入模块
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.utils.get_abs_path import get_abs_path
-from src.tools.everything_to_text.pdf_to_md_mineru import mineru_pdf2md
+
+from utils.get_abs_path import get_abs_path
+from tools.everything_to_text.pdf_to_md_mineru import mineru_pdf2md
 
 
 # 测试 mineru_pdf2md 的输出位置功能

@@ -4,8 +4,8 @@ import argparse
 import yaml
 import traceback
 from loguru import logger
-from src.core.smart_paper_core import SmartPaper
-from src.core.prompt_manager import list_prompts
+from core.smart_paper_core import SmartPaper
+from core.prompt_manager import list_prompts
 
 
 def load_config():

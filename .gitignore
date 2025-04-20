@@ -19,6 +19,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+src/SmartPaper.egg-info/*
 
 # 虚拟环境
 venv/

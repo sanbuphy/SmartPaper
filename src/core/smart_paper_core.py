@@ -5,9 +5,9 @@ from pathlib import Path
 import tempfile
 import requests
 
-from src.core.llm_wrapper import LLMWrapper
-from src.core.document_converter import convert_to_text
-from src.utils.output_formatter import OutputFormatter
+from core.llm_wrapper import LLMWrapper
+from core.document_converter import convert_to_text
+from utils.output_formatter import OutputFormatter
 from loguru import logger
 
 
@@ -132,61 +132,84 @@ class SmartPaper:
             is_arxiv = "arxiv.org" in url.lower()
 
             if is_arxiv:
-                # 创建temp目录(如果不存在)
-                temp_dir = os.path.join(
-                    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "temp"
+                # 创建cache目录(如果不存在)用于缓存已下载的文件
+                cache_dir = os.path.join(
+                    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "cache"
                 )
-                os.makedirs(temp_dir, exist_ok=True)
+                os.makedirs(cache_dir, exist_ok=True)
 
                 # 从URL提取文件名
                 arxiv_id = url.split("/")[-1]
                 if not arxiv_id.endswith(".pdf"):
                     arxiv_id += ".pdf"
-                temp_path = os.path.join(temp_dir, arxiv_id)
+                cached_path = os.path.join(cache_dir, arxiv_id)
 
-                # 检查是否已存在同名文件
-                if not os.path.exists(temp_path):
-                    # 下载PDF文件
-                    logger.info(f"开始下载PDF: {url}")
-                    response = requests.get(url)
-                    response.raise_for_status()
+                # 临时工作目录，用于处理当前请求
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    # 确定使用的文件路径
+                    if os.path.exists(cached_path):
+                        # 如果缓存文件存在，复制到临时目录
+                        temp_path = os.path.join(temp_dir, arxiv_id)
+                        with open(cached_path, "rb") as src, open(temp_path, "wb") as dst:
+                            dst.write(src.read())
+                        logger.info(f"使用缓存文件: {cached_path}")
+                    else:
+                        # 下载PDF文件
+                        logger.info(f"开始下载PDF: {url}")
+                        try:
+                            response = requests.get(url, timeout=30)  # 设置超时
+                            response.raise_for_status()
 
-                    with open(temp_path, "wb") as f:
-                        f.write(response.content)
-                    logger.info("PDF下载完成")
+                            # 保存到缓存
+                            with open(cached_path, "wb") as f:
+                                f.write(response.content)
 
-                # 转换PDF文件
-                result = convert_to_text(
-                    temp_path, config=self.config, converter_name=converter_name
-                )
-                logger.info(f"PDF转换完成，使用转换器: {converter_name}")
+                            # 复制到临时目录
+                            temp_path = os.path.join(temp_dir, arxiv_id)
+                            with open(temp_path, "wb") as f:
+                                f.write(response.content)
+                            logger.info("PDF下载完成")
+                        except Exception as e:
+                            if os.path.exists(cached_path):
+                                os.remove(cached_path)  # 删除可能部分下载的缓存
+                            raise Exception(f"下载PDF失败: {str(e)}")
 
-                # 处理文本内容
-                text_content = result["text_content"]
-                if "References" in text_content:
-                    text_content = text_content.split("References")[0]
-                text_content = "\n".join(
-                    [line for line in text_content.split("\n") if line.strip()]
-                )
+                    # 转换PDF文件
+                    result = convert_to_text(
+                        temp_path, config=self.config, converter_name=converter_name
+                    )
+                    logger.info(f"PDF转换完成，使用转换器: {converter_name}")
 
-                # 更新结果
-                result["text_content"] = text_content
-                result["metadata"]["url"] = url
-                if description:
-                    result["metadata"]["description"] = description
-                return result
+                    # 处理文本内容
+                    text_content = result["text_content"]
+                    if "References" in text_content:
+                        text_content = text_content.split("References")[0]
+                    text_content = "\n".join(
+                        [line for line in text_content.split("\n") if line.strip()]
+                    )
+
+                    # 更新结果
+                    result["text_content"] = text_content
+                    result["metadata"]["url"] = url
+                    if description:
+                        result["metadata"]["description"] = description
+                    return result
 
             else:
                 # 获取网页内容
                 response = requests.get(url)
                 response.raise_for_status()
 
-                # 使用临时文件保存内容
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as temp_file:
-                    temp_file.write(response.content)
-                    temp_path = temp_file.name
+                # 使用临时目录管理下载的文件
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    # 确定文件名和路径
+                    file_suffix = ".html"  # 假设默认为html，可以根据content-type改进
+                    temp_path = os.path.join(temp_dir, f"downloaded_content{file_suffix}")
 
-                try:
+                    # 保存内容到临时文件
+                    with open(temp_path, "wb") as temp_file:
+                        temp_file.write(response.content)
+
                     # 转换HTML文件
                     result = convert_to_text(
                         temp_path, config=self.config, converter_name=converter_name
@@ -198,9 +221,6 @@ class SmartPaper:
                     result["metadata"] = {**result.get("metadata", {}), **metadata}
 
                     return result
-                finally:
-                    # 清理临时文件
-                    os.unlink(temp_path)
 
         except requests.exceptions.RequestException as e:
             raise Exception(f"下载文件失败: {str(e)}")

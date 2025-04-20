@@ -3,8 +3,8 @@ import sys
 import argparse
 import traceback
 from loguru import logger
-from src.core.smart_paper_core import SmartPaper
-from src.core.prompt_manager import list_prompts
+from core.smart_paper_core import SmartPaper
+from core.prompt_manager import list_prompts
 
 
 def process_paper(

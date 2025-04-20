@@ -10,14 +10,14 @@ from .document_converter import DocumentConverter
 
 # 导入所有转换器
 try:
-    from src.tools.everything_to_text.pdf_to_md_mineru import mineru_pdf2md
+    from tools.everything_to_text.pdf_to_md_mineru import mineru_pdf2md
 
     _has_mineru = True
 except ImportError:
     _has_mineru = False
 
 try:
-    from src.tools.everything_to_text.pdf_to_md_markitdown import markitdown_pdf2md
+    from tools.everything_to_text.pdf_to_md_markitdown import markitdown_pdf2md
 
     _has_markitdown = True
 except ImportError:

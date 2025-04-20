@@ -9,9 +9,8 @@ import pytest
 from typing import Dict
 from openai import OpenAI
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.core.document_converter import convert_to_text, convert_url_to_text
+from core.document_converter import convert_to_text, convert_url_to_text
 
 
 @pytest.fixture

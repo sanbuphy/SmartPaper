@@ -144,20 +144,20 @@ from .document_converter import DocumentConverter
 
 # 导入所有转换器
 try:
-    from src.tools.everything_to_text.pdf_to_md_mineru import mineru_pdf2md
+    from tools.everything_to_text.pdf_to_md_mineru import mineru_pdf2md
     _has_mineru = True
 except ImportError:
     _has_mineru = False
 
 try:
-    from src.tools.everything_to_text.pdf_to_md_markitdown import markitdown_pdf2md
+    from tools.everything_to_text.pdf_to_md_markitdown import markitdown_pdf2md
     _has_markitdown = True
 except ImportError:
     _has_markitdown = False
 
 # 导入你的新转换器
 try:
-    from src.tools.everything_to_text.txt_to_md import txt_to_md
+    from tools.everything_to_text.txt_to_md import txt_to_md
     _has_txt_converter = True
 except ImportError:
     _has_txt_converter = False
@@ -189,7 +189,7 @@ register_all_converters()
 注册完成后，可以通过以下方式使用新转换器：
 
 ```python
-from src.core.document_converter import convert_to_text
+from core.document_converter import convert_to_text
 
 # 使用特定转换器处理文件
 result = convert_to_text("path/to/your/file.txt", converter_name="txt_converter")
@@ -266,9 +266,9 @@ import os
 import sys
 from typing import Dict
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.core.document_converter import convert_to_text
+
+from core.document_converter import convert_to_text
 
 def test_txt_converter():
     """测试TXT文件转换器"""

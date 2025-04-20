@@ -12,10 +12,10 @@ from typing import Dict
 from loguru import logger
 
 # 添加项目根目录到Python路径
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.core.smart_paper_core import SmartPaper
-from src.core.prompt_manager import list_prompts
+
+from core.smart_paper_core import SmartPaper
+from core.prompt_manager import list_prompts
 
 
 def test_url(url: str, mode: str = "agent", prompt_name: str = None, description: str = None):
