@@ -8,6 +8,7 @@
 
 import os
 import sys
+from loguru import logger
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 import pytest
@@ -37,7 +38,7 @@ def mock_config():
 @pytest.fixture
 def processor(mock_config):
     with patch("src.utils.llm_adapter.ChatOpenAI"):
-        return LLMWrap(mock_config)
+        return LLMWrapper(mock_config)
 
 
 def load_config():
@@ -50,20 +51,20 @@ def load_config():
 def test_stream_chat():
     """测试真实的流式对话"""
     config = load_config()
-    processor = LLMWrap(config)
+    processor = LLMWrapper(config)
 
     # 进行对话测试
     questions = ["你是谁？", "你能做什么？", "总结一下我们的对话"]
 
     for question in questions:
-        print(f"\n用户: {question}")
-        print("助手: ", end="", flush=True)
+        logger.info(f"\n用户: {question}")
+        logger.info("助手: ", end="", flush=True)
 
         # 使用流式对话
         messages = [HumanMessage(content=question)]
         for chunk in processor._stream_chat(messages):
-            print(chunk, end="", flush=True)
-        print()  # 换行
+            logger.info(chunk, end="", flush=True)
+        logger.info()  # 换行
 
 
 if __name__ == "__main__":

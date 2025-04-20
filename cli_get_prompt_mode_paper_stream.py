@@ -36,7 +36,7 @@ def process_paper(url: str, prompt_name: str = "yuanbao"):
         reader = SmartPaper(output_format="markdown")
 
         # 流式处理论文并实时输出
-        print("分析结果:\n")
+        logger.info("分析结果:\n")
 
         # 使用流式处理
         for chunk in reader.process_paper_url_stream(url, mode="prompt", prompt_name=prompt_name):
@@ -59,10 +59,10 @@ def process_paper(url: str, prompt_name: str = "yuanbao"):
 def main():
     """主函数"""
     # 显示可用的提示词模板
-    print("\n可用的提示词模板:")
+    logger.info("\n可用的提示词模板:")
     for name, desc in list_prompts().items():
-        print(f"- {name}: {desc}")
-    print()
+        logger.info(f"- {name}: {desc}")
+    logger.info()
 
     parser = argparse.ArgumentParser(description="论文分析工具")
     parser.add_argument(

@@ -21,6 +21,7 @@ import argparse
 import subprocess
 import re
 from pathlib import Path
+from loguru import logger
 
 
 def check_is_magic_pdf_test(file_path):
@@ -139,12 +140,12 @@ def run_tests(test_paths, verbose=False):
         bool: 测试是否全部通过
     """
     if not test_paths:
-        print("未找到符合条件的测试文件")
+        logger.info("未找到符合条件的测试文件")
         return False
 
     all_passed = True
     for path in test_paths:
-        print(f"\n运行测试: {path}")
+        logger.info(f"\n运行测试: {path}")
 
         cmd = ["python", "-m", "pytest", path]
         if verbose:

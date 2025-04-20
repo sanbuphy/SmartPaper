@@ -119,7 +119,7 @@ class SmartPaper:
                 result = self.process_paper(str(file_path), mode, prompt_name)
                 results.append(result)
             except Exception as e:
-                print(f"处理文件 {file_path} 失败: {str(e)}")
+                logger.error(f"处理文件 {file_path} 失败: {str(e)}")
 
         return results
 

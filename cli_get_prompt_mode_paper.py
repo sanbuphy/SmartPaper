@@ -59,10 +59,10 @@ def main():
 
 if __name__ == "__main__":
     # 显示可用的提示词模板
-    print("\n可用的提示词模板:")
+    logger.info("\n可用的提示词模板:")
     for name, desc in list_prompts().items():
-        print(f"- {name}: {desc}")
-    print()
+        logger.info(f"- {name}: {desc}")
+    logger.info()
 
     # 运行主函数
     main()

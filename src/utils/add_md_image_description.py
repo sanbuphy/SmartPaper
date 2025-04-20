@@ -43,6 +43,7 @@ import os  # 用于文件和目录操作
 import re  # 用于正则表达式处理
 from pathlib import Path  # 用于跨平台的路径操作
 from src.tools.everything_to_text.image_to_text import describe_image
+from loguru import logger
 
 
 def read_markdown_files(path):
@@ -158,12 +159,12 @@ def process_markdown_image(file_path, force_add_desc=False, prompt=None):
         if modified:
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(new_content)
-            print(f"已更新文件: {file_path}")
+            logger.info(f"已更新文件: {file_path}")
         else:
-            print(f"无需修改: {file_path}")
+            logger.info(f"无需修改: {file_path}")
 
     except Exception as e:
-        print(f"处理文件 {file_path} 时出错: {str(e)}")
+        logger.error(f"处理文件 {file_path} 时出错: {str(e)}")
 
 
 def add_md_image_description(path, force_add_desc=True):
@@ -181,5 +182,5 @@ def add_md_image_description(path, force_add_desc=True):
         raise ValueError("路径必须是绝对路径")
 
     for md_file in read_markdown_files(path):
-        print(f"正在处理: {md_file}")
+        logger.info(f"正在处理: {md_file}")
         process_markdown_image(md_file, force_add_desc=force_add_desc)

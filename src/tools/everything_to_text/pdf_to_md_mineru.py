@@ -42,6 +42,7 @@ from magic_pdf.data.data_reader_writer import FileBasedDataWriter, FileBasedData
 from magic_pdf.data.dataset import PymuDocDataset
 from magic_pdf.model.doc_analyze_by_custom_model import doc_analyze
 from magic_pdf.config.enums import SupportedPdfParseMethod
+from loguru import logger
 
 
 def download_json(url):
@@ -64,8 +65,8 @@ def download_and_setup_models():
     model_dir = snapshot_download("opendatalab/PDF-Extract-Kit-1.0", allow_patterns=mineru_patterns)
     layoutreader_model_dir = snapshot_download("ppaanngggg/layoutreader")
     model_dir = model_dir + "/models"
-    print(f"model_dir is: {model_dir}")
-    print(f"layoutreader_model_dir is: {layoutreader_model_dir}")
+    logger.info(f"model_dir is: {model_dir}")
+    logger.info(f"layoutreader_model_dir is: {layoutreader_model_dir}")
 
     json_url = "https://gcore.jsdelivr.net/gh/opendatalab/MinerU@master/magic-pdf.template.json"
     config_file_name = "magic-pdf.json"
@@ -80,7 +81,9 @@ def download_and_setup_models():
     with open(config_file, "w") as f:
         json.dump(json_data, f, indent=2)
 
-    print(f"The configuration file has been configured successfully, the path is: {config_file}")
+    logger.info(
+        f"The configuration file has been configured successfully, the path is: {config_file}"
+    )
 
 
 def mineru_pdf2md(pdf_path, output_base_dir="outputs"):

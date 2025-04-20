@@ -30,6 +30,7 @@ import base64
 from typing import Any, Dict
 from pathlib import Path
 from PIL import Image
+from loguru import logger
 
 
 class ImageTextExtractor:
@@ -350,4 +351,4 @@ def save_result_to_file(content: str, path: str = "results/result.md"):
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(content)
-    print(f"结果已保存到文件: {output_path}")
+    logger.info(f"结果已保存到文件: {output_path}")

@@ -24,9 +24,9 @@ class LLMWrapper:
         model_index = config["llm"].get("default_model_index", 0)
         model = config["llm"][provider]["models"][model_index]
 
-        print(f"\n当前使用的LLM配置信息:")
-        print(f"- 提供商: {provider}")
-        print(f"- 模型: {model}\n")
+        logger.info("\n当前使用的LLM配置信息:")
+        logger.info(f"- 提供商: {provider}")
+        logger.info(f"- 模型: {model}\n")
         logger.info(f"初始化PaperProcessor完成，使用模型: {config['llm']['provider']}")
 
     def process_with_content(self, text: str, prompt_name: Optional[str] = None) -> Dict:

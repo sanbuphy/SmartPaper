@@ -9,6 +9,7 @@
 import os
 import sys
 from typing import Dict
+from loguru import logger
 
 # 添加项目根目录到Python路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -28,14 +29,12 @@ def test_url(url: str, mode: str = "agent", prompt_name: str = None, description
     """
     reader = SmartPaper(output_format="markdown")
 
-    print(f"\n{'='*50}")
-    print(f"测试模式: {mode}")
+    logger.info(f"测试模式: {mode}")
     if mode == "prompt":
-        print(f"提示词: {prompt_name or '默认提示词'}")
-    print(f"论文URL: {url}")
+        logger.info(f"提示词: {prompt_name or '默认提示词'}")
+    logger.info(f"论文URL: {url}")
     if description:
-        print(f"论文描述: {description}")
-    print(f"{'='*50}\n")
+        logger.info(f"论文描述: {description}")
 
     result = reader.process_paper_url(
         url, mode=mode, prompt_name=prompt_name, description=description
@@ -57,20 +56,19 @@ def test_url(url: str, mode: str = "agent", prompt_name: str = None, description
         else:
             f.write(result["result"])
 
-    print("分析结果:")
-    print("-" * 50)
+    logger.info("分析结果:")
     if "structured_analysis" in result:
         for section, content in result["structured_analysis"].items():
-            print(f"\n## {section.capitalize()}")
-            print(content)
+            logger.info(f"\n## {section.capitalize()}")
+            logger.info(content)
     else:
-        print(result["result"])
-    print(f"\n分析结果已保存到: {output_path}\n")
+        logger.info(result["result"])
+    logger.info(f"\n分析结果已保存到: {output_path}\n")
 
 
 if __name__ == "__main__":
     # 测试配置
-    print(list_prompts())
+    logger.info(list_prompts())
 
     TEST_PAPERS = [
         {
@@ -81,11 +79,11 @@ if __name__ == "__main__":
     ]
 
     # # 运行Agent模式测试
-    # print("\n=== 运行Agent模式测试 ===")
+    # logger.info("\n=== 运行Agent模式测试 ===")
     # test_url(TEST_PAPERS[0]["url"], mode='agent')
 
     # 运行不同提示词的测试
     prompts_to_test = ["yuanbao"]
     for prompt in prompts_to_test:
-        print(f"\n=== 运行{prompt}提示词测试 ===")
+        logger.info(f"\n=== 运行{prompt}提示词测试 ===")
         test_url(TEST_PAPERS[0]["url"], mode="prompt", prompt_name=prompt)

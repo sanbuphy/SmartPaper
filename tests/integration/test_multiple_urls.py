@@ -13,6 +13,7 @@
 import os
 import sys
 from typing import Dict, List
+from loguru import logger
 import re
 
 # 添加项目根目录到Python路径
@@ -31,11 +32,9 @@ def test_urls(urls: List[Dict], mode: str = "agent", prompt_name: str = None):
     """
     reader = SmartPaper(output_format="markdown")
 
-    print(f"\n{'='*50}")
-    print(f"批量测试模式: {mode}")
+    logger.info(f"批量测试模式: {mode}")
     if mode == "prompt":
-        print(f"提示词: {prompt_name or '默认提示词'}")
-    print(f"{'='*50}\n")
+        logger.info(f"提示词: {prompt_name or '默认提示词'}")
 
     # 创建outputs目录(如果不存在)
     output_dir = os.path.join(
@@ -45,12 +44,12 @@ def test_urls(urls: List[Dict], mode: str = "agent", prompt_name: str = None):
 
     total_papers = len(urls)
     for i, paper in enumerate(urls, 1):
-        print(f"\n当前分析第 {i}/{total_papers} 篇论文")
-        print(
+        logger.info(f"\n当前分析第 {i}/{total_papers} 篇论文")
+        logger.info(
             f"进度: [{'='*int(20*i/total_papers)}{' '*(20-int(20*i/total_papers))}] {int(100*i/total_papers)}%"
         )
-        print(f"\n--- 处理论文: {paper['description']} ---")
-        print(f"URL: {paper['url']}\n")
+        logger.info(f"\n--- 处理论文: {paper['description']} ---")
+        logger.info(f"URL: {paper['url']}\n")
 
         # 生成文件名(取description前8个单词)
         description_words = re.sub(r"[^\w\s-：]", "_", paper["description"]).split()[:8]
@@ -59,7 +58,7 @@ def test_urls(urls: List[Dict], mode: str = "agent", prompt_name: str = None):
 
         # 检查文件是否已存在
         if os.path.exists(output_path):
-            print(f"文件已存在,跳过: {output_path}\n")
+            logger.info(f"文件已存在,跳过: {output_path}\n")
             continue
 
         result = reader.process_paper_url(
@@ -71,10 +70,10 @@ def test_urls(urls: List[Dict], mode: str = "agent", prompt_name: str = None):
             # 直接写入完整的格式化结果
             f.write(result["result"])
 
-        print("分析结果:")
-        print("-" * 30)
-        print(result["result"])
-        print(f"\n分析结果已保存到: {output_path}\n")
+        logger.info("分析结果:")
+        logger.info("-" * 30)
+        logger.info(result["result"])
+        logger.info(f"\n分析结果已保存到: {output_path}\n")
 
 
 if __name__ == "__main__":
@@ -87,9 +86,9 @@ if __name__ == "__main__":
     ]
 
     # # 使用Agent模式测试所有论文
-    # print("\n=== Agent模式批量测试 ===")
+    # logger.info("\n=== Agent模式批量测试 ===")
     # test_urls(TEST_PAPERS, mode='agent')
 
     # 使用summary提示词测试所有论文
-    print("\n=== Summary提示词批量测试 ===")
+    logger.info("\n=== Summary提示词批量测试 ===")
     test_urls(TEST_PAPERS, mode="prompt", prompt_name="yuanbao")

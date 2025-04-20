@@ -1,7 +1,7 @@
 import os
 from typing import Dict
 import yaml
-import logging
+from loguru import logger
 import os
 from typing import Union, Optional
 
@@ -21,7 +21,7 @@ class PromptLibrary:
             self.prompt_file = prompt_file
 
         self.prompts = self._load_prompts()
-        logging.info(f"成功加载了 {len(self.prompts)} 个提示词模板")
+        logger.info(f"成功加载了 {len(self.prompts)} 个提示词模板")
 
     def _load_prompts(self) -> Dict:
         """加载提示词配置
