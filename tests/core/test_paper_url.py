@@ -4,6 +4,7 @@
 
 import pytest
 import yaml
+from loguru import logger
 
 from core.smart_paper_core import SmartPaper
 from core.prompt_manager import list_prompts
@@ -31,6 +32,7 @@ def sample_paper_url():
 
 def test_url_default(reader, sample_paper_url):
     """测试URL论文分析（默认提示词）"""
+    logger.info("开始测试: URL论文分析（默认提示词）")
     result = reader.process_paper_url(sample_paper_url)
 
     assert isinstance(result, dict)
@@ -41,6 +43,7 @@ def test_url_default(reader, sample_paper_url):
 
 def test_url_custom_prompt(reader, sample_paper_url):
     """测试URL论文分析（自定义提示词）"""
+    logger.info("开始测试: URL论文分析（自定义提示词）")
     # 获取第一个可用的提示词
     available_prompts = list_prompts()
     first_prompt = next(iter(available_prompts))
@@ -55,6 +58,7 @@ def test_url_custom_prompt(reader, sample_paper_url):
 
 def test_invalid_url(reader):
     """测试无效URL的处理"""
+    logger.info("开始测试: 无效URL的处理")
     invalid_url = "https://invalid-url.com/paper.pdf"
 
     with pytest.raises(Exception):

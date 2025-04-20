@@ -5,10 +5,10 @@
 """
 
 import os
-import tempfile
 import requests
-from typing import Callable, Dict, Any, Optional, Union
+from typing import Callable, Dict, Union
 from pathlib import Path
+import uuid
 
 
 class DocumentConverter:
@@ -79,15 +79,23 @@ class DocumentConverter:
 
             # 检查内容类型
             content_type = response.headers.get("content-type", "")
-            if "application/pdf" not in content_type.lower():
-                raise ValueError("URL必须指向PDF文件")
+            # 这里可能存在问题：如果服务器没有正确设置content-type或者返回了其他类型的PDF文件
+            # 可以考虑检查URL是否以.pdf结尾或者使用更宽松的检查方式
+            if "application/pdf" not in content_type.lower() and not url.lower().endswith(".pdf"):
+                raise ValueError(f"URL必须指向PDF文件，当前内容类型: {content_type}")
 
             # 创建临时文件
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+            os.makedirs("temp", exist_ok=True)
+            temp_path = os.path.join("temp", f"{uuid.uuid4()}.pdf")
+
+            with open(temp_path, "wb") as temp_file:
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
                         temp_file.write(chunk)
-                temp_path = temp_file.name
+
+            # 检查下载的文件是否为空
+            if os.path.getsize(temp_path) == 0:
+                raise ValueError("下载的文件为空")
 
             # 转换文件
             try:
@@ -96,8 +104,13 @@ class DocumentConverter:
                 return result
             finally:
                 # 清理临时文件
-                os.unlink(temp_path)
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
 
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"URL请求失败: {str(e)}")
+        except ValueError as e:
+            raise ValueError(f"{str(e)}")
         except Exception as e:
             raise Exception(f"URL文件转换失败: {str(e)}")
 

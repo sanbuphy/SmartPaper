@@ -8,14 +8,11 @@
 
 import os
 import sys
-from typing import Dict, List
 from loguru import logger
 
 # 添加项目根目录到Python路径
 
-
 from core.smart_paper_core import SmartPaper
-from core.prompt_manager import list_prompts
 
 
 def test_single_paper(paper_path: str, prompt_name: str = None):

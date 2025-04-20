@@ -27,6 +27,7 @@ def test_url(url: str, mode: str = "agent", prompt_name: str = None, description
         prompt_name (str, optional): 提示词名称
         description (str, optional): 论文描述
     """
+    logger.info("====== 开始测试: 单个URL论文分析 ======")
     reader = SmartPaper(output_format="markdown")
 
     logger.info(f"测试模式: {mode}")
@@ -36,9 +37,11 @@ def test_url(url: str, mode: str = "agent", prompt_name: str = None, description
     if description:
         logger.info(f"论文描述: {description}")
 
+    logger.info("开始处理论文URL并获取分析结果...")
     result = reader.process_paper_url(
         url, mode=mode, prompt_name=prompt_name, description=description
     )
+    logger.info("论文分析完成，准备保存结果...")
 
     # 创建outputs目录(如果不存在)
     output_dir = os.path.join(
@@ -48,6 +51,7 @@ def test_url(url: str, mode: str = "agent", prompt_name: str = None, description
 
     # 保存分析结果到outputs目录
     output_path = os.path.join(output_dir, f'analysis_{mode}_{prompt_name or "default"}.md')
+    logger.info(f"保存分析结果到文件: {output_path}")
     with open(output_path, "w", encoding="utf-8") as f:
         if "structured_analysis" in result:
             for section, content in result["structured_analysis"].items():
@@ -64,10 +68,13 @@ def test_url(url: str, mode: str = "agent", prompt_name: str = None, description
     else:
         logger.info(result["result"])
     logger.info(f"\n分析结果已保存到: {output_path}\n")
+    logger.info("====== 单个URL论文分析测试完成 ======")
 
 
 if __name__ == "__main__":
     # 测试配置
+    logger.info("====== 开始URL论文分析测试脚本 ======")
+    logger.info("获取可用的提示词列表:")
     logger.info(list_prompts())
 
     TEST_PAPERS = [
@@ -87,3 +94,5 @@ if __name__ == "__main__":
     for prompt in prompts_to_test:
         logger.info(f"\n=== 运行{prompt}提示词测试 ===")
         test_url(TEST_PAPERS[0]["url"], mode="prompt", prompt_name=prompt)
+
+    logger.info("====== URL论文分析测试脚本完成 ======")

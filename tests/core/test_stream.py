@@ -49,6 +49,7 @@ def load_config():
 
 def test_stream_chat():
     """测试真实的流式对话"""
+    logger.info("开始测试: 真实的流式对话功能")
     config = load_config()
     processor = LLMWrapper(config)
 
