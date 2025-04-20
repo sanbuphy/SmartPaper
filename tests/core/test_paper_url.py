@@ -1,6 +1,5 @@
 """
 使用 pytest 测试通过URL链接分析学术论文的功能。
-支持两种分析模式：提示词模式（prompt）和智能代理模式（agent）。
 """
 
 import os
@@ -35,9 +34,9 @@ def sample_paper_url():
     return "https://arxiv.org/pdf/2312.12456.pdf"
 
 
-def test_url_prompt_default(reader, sample_paper_url):
-    """测试URL论文的默认提示词模式"""
-    result = reader.process_paper_url(sample_paper_url, mode="prompt")
+def test_url_default(reader, sample_paper_url):
+    """测试URL论文分析（默认提示词）"""
+    result = reader.process_paper_url(sample_paper_url)
 
     assert isinstance(result, dict)
     assert "result" in result
@@ -45,33 +44,18 @@ def test_url_prompt_default(reader, sample_paper_url):
     assert len(result["result"]) > 0
 
 
-def test_url_prompt_custom(reader, sample_paper_url):
-    """测试URL论文的自定义提示词模式"""
+def test_url_custom_prompt(reader, sample_paper_url):
+    """测试URL论文分析（自定义提示词）"""
     # 获取第一个可用的提示词
     available_prompts = list_prompts()
     first_prompt = next(iter(available_prompts))
 
-    result = reader.process_paper_url(sample_paper_url, mode="prompt", prompt_name=first_prompt)
+    result = reader.process_paper_url(sample_paper_url, prompt_name=first_prompt)
 
     assert isinstance(result, dict)
     assert "result" in result
     assert isinstance(result["result"], str)
     assert len(result["result"]) > 0
-
-
-def test_url_agent(reader, sample_paper_url):
-    """测试URL论文的Agent模式"""
-    result = reader.process_paper_url(sample_paper_url, mode="agent")
-
-    assert isinstance(result, dict)
-    assert any(key in result for key in ["result", "structured_analysis"])
-
-    if "structured_analysis" in result:
-        assert isinstance(result["structured_analysis"], dict)
-        assert len(result["structured_analysis"]) > 0
-    else:
-        assert isinstance(result["result"], str)
-        assert len(result["result"]) > 0
 
 
 def test_invalid_url(reader):
@@ -79,10 +63,4 @@ def test_invalid_url(reader):
     invalid_url = "https://invalid-url.com/paper.pdf"
 
     with pytest.raises(Exception):
-        reader.process_paper_url(invalid_url, mode="prompt")
-
-
-def test_invalid_mode(reader, sample_paper_url):
-    """测试无效模式的处理"""
-    with pytest.raises(ValueError):
-        reader.process_paper_url(sample_paper_url, mode="invalid_mode")
+        reader.process_paper_url(invalid_url)

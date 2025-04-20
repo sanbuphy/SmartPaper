@@ -105,9 +105,3 @@ prompts:
     - results
     - contribution
     - full_analysis
-
-# Agent配置
-agent:
-  max_iterations: 5
-  timeout: 300  # 秒
-  memory_window: 10

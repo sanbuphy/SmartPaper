@@ -39,7 +39,7 @@ def process_paper(url: str, prompt_name: str = "yuanbao"):
         logger.info("分析结果:\n")
 
         # 使用流式处理
-        for chunk in reader.process_paper_url_stream(url, mode="prompt", prompt_name=prompt_name):
+        for chunk in reader.process_paper_url_stream(url, prompt_name=prompt_name):
             # 流式打印到控制台
             print(chunk, end="", flush=True)
             # 追加写入输出文件

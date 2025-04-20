@@ -7,31 +7,37 @@ from src.core.smart_paper_core import SmartPaper
 from src.core.prompt_manager import list_prompts
 
 
-def process_paper(url: str, prompt_name: str = "yuanbao"):
+def process_paper(
+    url: str, prompt_name: str = "yuanbao", output_path: str = "outputs/analysis_prompt.md"
+):
     """处理论文
 
     Args:
         url (str): 论文URL
         prompt_name (str): 提示词模板名称
+        output_path (str): 输出文件路径
     """
     try:
         # 初始化SmartPaper
         reader = SmartPaper(output_format="markdown")
         logger.info(f"使用提示词模板: {prompt_name}")
 
-        # 处理论文
-        result = reader.process_paper_url(url, mode="prompt", prompt_name=prompt_name)
+        # 分析论文
+        try:
+            result = reader.process_paper_url(url, prompt_name=prompt_name)
+        except Exception as e:
+            logger.error(f"分析失败: {str(e)}")
+            sys.exit(1)
 
-        # 创建输出目录
-        output_dir = "outputs"
-        os.makedirs(output_dir, exist_ok=True)
+        # 输出结果
+        logger.info("分析结果:")
+        print(result["result"])
+        logger.info(f"分析结果已保存到: {output_path}")
 
-        # 保存结果
-        output_file = os.path.join(output_dir, f"analysis_prompt_{prompt_name}.md")
-        with open(output_file, "w", encoding="utf-8") as f:
+        # 保存结果到文件
+        os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(result["result"])
-
-        logger.info(f"分析结果已保存到: {output_file}")
 
     except Exception as e:
         logger.error(f"处理失败: {str(e)}")
@@ -49,12 +55,13 @@ def main():
     parser.add_argument(
         "--prompt", "-p", default="yuanbao", choices=list_prompts().keys(), help="提示词模板名称"
     )
+    parser.add_argument("--output", "-o", default="outputs/analysis_prompt.md", help="输出文件路径")
 
     # 解析参数
     args = parser.parse_args()
 
     # 处理论文
-    process_paper(args.url, args.prompt)
+    process_paper(args.url, args.prompt, args.output)
 
 
 if __name__ == "__main__":

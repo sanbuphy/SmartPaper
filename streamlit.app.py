@@ -91,9 +91,7 @@ def process_paper(url: str, prompt_name: str = "yuanbao"):
         with open(output_file, "w", encoding="utf-8") as f:
             chunk_count = 0
             total_length = 0
-            for chunk in reader.process_paper_url_stream(
-                url, mode="prompt", prompt_name=prompt_name
-            ):
+            for chunk in reader.process_paper_url_stream(url, prompt_name=prompt_name):
                 chunk_count += 1
                 total_length += len(chunk)
                 f.write(chunk)
@@ -106,13 +104,10 @@ def process_paper(url: str, prompt_name: str = "yuanbao"):
         yield {"type": "final", "success": True, "file_path": output_file}
 
     except Exception as e:
-        error_stack = traceback.format_exc()
-        logger.error(f"处理失败: {str(e)}\n{error_stack}")
-        yield {
-            "type": "final",
-            "success": False,
-            "error": f"{str(e)}\n\n详细错误信息:\n{error_stack}",
-        }
+        error_msg = f"处理失败: {str(e)}"
+        logger.error(error_msg)
+        yield {"type": "chunk", "content": f"❌ **错误**: {error_msg}"}
+        yield {"type": "final", "success": False, "error": error_msg}
 
 
 def reanalyze_paper(url: str, prompt_name: str):

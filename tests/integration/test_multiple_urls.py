@@ -1,13 +1,12 @@
 """
-此测试文件用于批量测试多个URL论文的分析功能。它支持智能代理模式（agent）和提示词模式（prompt），可以同时处理多篇论文并显示进度条。每篇论文可以提供描述信息，分析结果会以markdown格式保存到outputs目录，文件名会包含论文描述的关键词。该文件还实现了断点续传功能，如果某篇论文的分析结果已存在，会自动跳过。
+此测试文件用于批量测试多个URL论文的分析功能。它可以同时处理多篇论文并显示进度条。每篇论文可以提供描述信息，分析结果会以markdown格式保存到outputs目录，文件名会包含论文描述的关键词。该文件还实现了断点续传功能，如果某篇论文的分析结果已存在，会自动跳过。
 
 示例用法：
     papers = [
         {"url": "https://arxiv.org/pdf/2203.14465.pdf", "description": "STaR: Bootstrapping Reasoning"},
         {"url": "https://arxiv.org/pdf/2305.12002.pdf", "description": "GPT-4 Technical Report"}
     ]
-    test_urls(papers, mode="agent")  # 使用智能代理模式批量分析论文
-    test_urls(papers, mode="prompt", prompt_name="yuanbao")  # 使用特定提示词批量分析论文
+    test_urls(papers, prompt_name="yuanbao")  # 使用特定提示词批量分析论文
 """
 
 import os
@@ -22,19 +21,16 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from src.core.smart_paper_core import SmartPaper
 
 
-def test_urls(urls: List[Dict], mode: str = "agent", prompt_name: str = None):
+def test_urls(urls: List[Dict], prompt_name: str = None):
     """测试多个URL论文
 
     Args:
         urls (List[Dict]): 论文URL列表，每个元素包含url和description
-        mode (str): 分析模式 ('agent' 或 'prompt')
         prompt_name (str, optional): 提示词名称
     """
     reader = SmartPaper(output_format="markdown")
 
-    logger.info(f"批量测试模式: {mode}")
-    if mode == "prompt":
-        logger.info(f"提示词: {prompt_name or '默认提示词'}")
+    logger.info(f"提示词: {prompt_name or '默认提示词'}")
 
     # 创建outputs目录(如果不存在)
     output_dir = os.path.join(
@@ -54,7 +50,7 @@ def test_urls(urls: List[Dict], mode: str = "agent", prompt_name: str = None):
         # 生成文件名(取description前8个单词)
         description_words = re.sub(r"[^\w\s-：]", "_", paper["description"]).split()[:8]
         filename = "_".join(description_words)
-        output_path = os.path.join(output_dir, f'{filename}_{mode}_{prompt_name or "default"}.md')
+        output_path = os.path.join(output_dir, f'{filename}_{prompt_name or "default"}.md')
 
         # 检查文件是否已存在
         if os.path.exists(output_path):
@@ -62,7 +58,7 @@ def test_urls(urls: List[Dict], mode: str = "agent", prompt_name: str = None):
             continue
 
         result = reader.process_paper_url(
-            paper["url"], mode=mode, prompt_name=prompt_name, description=paper["description"]
+            paper["url"], prompt_name=prompt_name, description=paper["description"]
         )
 
         # 保存分析结果
@@ -85,10 +81,6 @@ if __name__ == "__main__":
         },
     ]
 
-    # # 使用Agent模式测试所有论文
-    # logger.info("\n=== Agent模式批量测试 ===")
-    # test_urls(TEST_PAPERS, mode='agent')
-
-    # 使用summary提示词测试所有论文
-    logger.info("\n=== Summary提示词批量测试 ===")
-    test_urls(TEST_PAPERS, mode="prompt", prompt_name="yuanbao")
+    # 使用指定提示词测试所有论文
+    logger.info("\n=== 使用提示词批量测试 ===")
+    test_urls(TEST_PAPERS, prompt_name="yuanbao")
