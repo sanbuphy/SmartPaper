@@ -62,7 +62,6 @@ def main():
     logger.info("\n可用的提示词模板:")
     for name, desc in list_prompts().items():
         logger.info(f"- {name}: {desc}")
-    logger.info()
 
     parser = argparse.ArgumentParser(description="论文分析工具")
     parser.add_argument(
