@@ -1,0 +1,79 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 日志和缓存
+*.log
+.cache/
+logs/
+
+# 输出目录
+outputs/
+results/
+
+# 配置文件
+.env
+config.local.yaml
+config.yaml
+
+# 系统文件
+.DS_Store
+Thumbs.db
+config/config.yaml
+temp/
+tests/utils/test_get_abs_path_datas/test_file_1.txt
+tests/utils/test_get_abs_path_datas/test_file_2.txt
+
+tests/tools/output
+
+src/tools/everything_to_text/output
+
+db
+
+output
+outputs
+
+extracted_content
+
+test.pdf
+
+test_pdf_to_md_pdfplumber.pdf
+
+.venv
+
+.pytest_cache
+
+.idea
+
+__pycache__
+
+build

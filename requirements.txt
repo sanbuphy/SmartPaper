@@ -1,0 +1,39 @@
+# SmartPaper 项目依赖
+# 基础依赖
+fastapi>=0.104.0
+uvicorn>=0.23.0
+pydantic>=2.4.0
+pymupdf>=1.22.0
+diskcache>=5.2.1
+openai>=1.0.0
+pillow>=10.0.0
+python-multipart>=0.0.6
+pyyaml>=6.0
+numpy
+requests
+feedparser>=6.0.0
+tqdm
+urllib3
+python-dotenv
+
+# OpenCV相关
+opencv-contrib-python
+opencv-python
+opencv-python-headless
+
+# 表格识别相关
+wired-table-rec
+lineless-table-rec
+table-cls
+
+# PaddlePaddle相关 - 特殊安装
+# 请使用以下命令安装PaddlePaddle:
+paddlepaddle==3.0.0rc0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+# paddlepaddle==3.0.0rc0
+
+# PaddleX需要从特定URL安装:
+https://paddle-model-ecology.bj.bcebos.com/paddlex/whl/paddlex-3.0.0rc0-py3-none-any.whl
+# pip install https://paddle-model-ecology.bj.bcebos.com/paddlex/whl/paddlex-3.0.0rc0-py3-none-any.whl
+# 开发依赖 (可选)
+# 如需安装开发依赖，请使用:
+# pip install -r requirements-dev.txt
