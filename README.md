@@ -26,7 +26,7 @@
 ---
 
 ## 📖 项目简介
-
+重构的分支在：[https://github.com/li-xiu-qi/SmartPaper/tree/refactor-version](https://github.com/li-xiu-qi/SmartPaper/tree/refactor-version)
 **SmartPaper** 是一个领先的智能论文阅读和分析工具，通过集成多种大语言模型 (LLM) 接口，自动分析学术论文内容并生成高质量的结构化报告。无论您是研究人员、学生还是对最新研究感兴趣的专业人士，SmartPaper 都能帮助您更高效地理解和提炼复杂的学术内容。
 
 > **注意**：项目当前处于高速迭代阶段，API 可能会发生变动。架构稳定后将尽量避免核心代码变更。
