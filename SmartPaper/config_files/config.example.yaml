@@ -1,0 +1,117 @@
+# LLM配置
+llm:
+  provider: "openai_siliconflow"  # 可选的提供商包括: openai，openai_deepseek，openai_siliconflow，openai_kimi，openai_doubao，zhipuai
+  max_requests: 10  # 最大请求次数
+  default_model_index: 0  # 默认使用第一个模型
+  openai:
+    api_key: ""
+    base_url: "https://api.openai.com/v1"  # 可选，用于自定义API端点
+    models:
+      - name: "gpt-4-1106-preview"
+        context_length: 128000  # 128k上下文窗口
+      - name: "gpt-4"
+        context_length: 8192  # 8k上下文窗口
+      - name: "gpt-3.5-turbo"
+        context_length: 16384  # 16k上下文窗口
+    temperature: 0.7
+    max_tokens: 8192
+  openai_deepseek:
+    api_key: ""
+    base_url: "https://api.deepseek.com/v1"
+    models:
+      - name: "deepseek-chat"
+        context_length: 32768  # 32k上下文窗口
+      - name: "deepseek-coder"
+        context_length: 32768  # 32k上下文窗口
+    temperature: 0.7
+    max_tokens: 8192
+  openai_siliconflow:
+    api_key: ""
+    base_url: "https://api.siliconflow.com/v1"
+    models:
+      - name: "Qwen/Qwen2.5-72B-Instruct"
+        context_length: 32768  # 32k上下文窗口
+      - name: "Qwen/Qwen2.5-72B-Instruct-128K"
+        context_length: 128000  # 128k上下文窗口
+      - name: "Qwen/Qwen2.5-7B-Instruct"
+        context_length: 32768  # 32k上下文窗口
+      - name: "Qwen/Qwen2.5-32B-Instruct"
+        context_length: 32768  # 32k上下文窗口
+    temperature: 0.7
+    max_tokens: 4096
+  openai_kimi:
+    api_key: ""
+    base_url: "https://api.moonshot.cn/v1"
+    models:
+      - name: "moonshot-v1-8k"
+        context_length: 8192  # 8k上下文窗口
+      - name: "moonshot-v1-32k"
+        context_length: 32768  # 32k上下文窗口
+    temperature: 0.7
+    max_tokens: 8192
+  openai_aistudio:
+    api_key: ""
+    base_url: "https://api.baidu.com/v1"
+    models:
+      - name: "ernie-bot-4"
+        context_length: 32768  # 32k上下文窗口
+      - name: "ernie-bot"
+        context_length: 16384  # 16k上下文窗口
+    temperature: 0.7
+    max_tokens: 4096
+  openai_doubao:
+    api_key: ""
+    base_url: "https://ark.cn-beijing.volces.com/api/v3"
+    models:
+      - name: "doubao-v1"
+        context_length: 32768  # 32k上下文窗口
+    temperature: 0.7
+    max_tokens: 4096
+  zhipuai:
+    api_key: ""
+    models:
+      - name: "glm-4"
+        context_length: 128000  # 128k上下文窗口
+      - name: "glm-3-turbo"
+        context_length: 32768  # 32k上下文窗口
+    temperature: 0.7
+    max_tokens: 8192
+  ai_studio:
+    api_key: "01ada502"
+    base_url: "https://aistudio.baidu.com/llm/lmapi/v3"
+    models:
+      - name: "deepseek-r1"
+        context_length: 32768  # 32k上下文窗口
+    temperature: 0.7
+    max_tokens: 8192
+  ai_studio_fast_deploy:
+    api_key: "01ad5a502"
+    base_url: "https://api-f6f9v9xdo8n0j2yd.aistudio-app.com/v1"
+    models:
+      - name: "deepseek-r1:32b"
+        context_length: 32768  # 32k上下文窗口
+    temperature: 0.7
+    max_tokens: 8192
+
+vlm:
+  provider: "openai_siliconflow"  # 可选的提供商包括: openai_siliconflow
+  openai_siliconflow:
+    api_key: ""
+    base_url: "https://api.siliconflow.com/v1"
+    models:
+      - name: "Pro/Qwen/Qwen2.5-VL-7B-Instruct"
+        context_length: 32768  # 32k上下文窗口
+      - name: "Qwen/Qwen2.5-VL-32B-Instruct"
+        context_length: 32768  # 32k上下文窗口
+      - name: "Qwen/Qwen2.5-VL-72B-Instruct"
+        context_length: 32768  # 32k上下文窗口
+      - name: "Qwen/Qwen2-VL-72B-Instruct"
+        context_length: 32768  # 32k上下文窗口
+      - name: "Qwen/Qwen2-VL-7B-Instruct"
+        context_length: 32768  # 32k上下文窗口
+    temperature: 0.7
+    max_tokens: 4096
+
+# 文档转换器配置
+document_converter:
+  converter_name: "fitz_with_image"  # 可选:fitz，fitz_with_image

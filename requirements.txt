@@ -1,44 +1,39 @@
---index-url https://mirrors.aliyun.com/pypi/simple/
+# SmartPaper 项目依赖
+# 基础依赖
+fastapi>=0.104.0
+uvicorn>=0.23.0
+pydantic>=2.4.0
+pymupdf>=1.22.0
+diskcache>=5.2.1
+openai>=1.0.0
+pillow>=10.0.0
+python-multipart>=0.0.6
+pyyaml>=6.0
+numpy
+requests
+feedparser>=6.0.0
+tqdm
+urllib3
+python-dotenv
 
-langchain>=0.3.14
-langchain-community>=0.3.14
-pydantic>=2.10.5
-openai>=1.3.7
-zhipuai>=1.0.7
-python-docx>=1.0.1
-python-pptx>=0.6.21
-openpyxl>=3.1.2
-pytesseract>=0.3.10
-Pillow>=10.1.0
-beautifulsoup4>=4.12.2
-requests>=2.31.0
-pyyaml>=6.0.1
-pandas>=2.1.4
-python-dotenv>=1.0.0
-arxiv>=2.0.0
-tqdm>=4.66.1
-markitdown
-loguru
+# OpenCV相关
+opencv-contrib-python
+opencv-python
+opencv-python-headless
 
-# 开发依赖
-pre-commit>=3.6.2
-black>=24.2.0
-isort>=5.13.2
-flake8>=7.0.0
-flake8-docstrings>=1.7.0
+# 表格识别相关
+wired-table-rec
+lineless-table-rec
+table-cls
 
-# 其他依赖
-streamlit>=1.42.0
-loguru
-pymupdf
-langchain_openai
-modelscope
+# PaddlePaddle相关 - 特殊安装
+# 请使用以下命令安装PaddlePaddle:
+paddlepaddle==3.0.0rc0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+# paddlepaddle==3.0.0rc0
 
-# TODO 有关magic-pdf的转换的接口支持
-# magic-pdf[full]
-# --extra-index-url https://wheels.myhloli.com
-
-# paddle 部分的依赖
-# 看src/tools/paddlepaddle/paddle_layout_detection.py内说明
-
-numpy==1.24.4
+# PaddleX需要从特定URL安装:
+https://paddle-model-ecology.bj.bcebos.com/paddlex/whl/paddlex-3.0.0rc0-py3-none-any.whl
+# pip install https://paddle-model-ecology.bj.bcebos.com/paddlex/whl/paddlex-3.0.0rc0-py3-none-any.whl
+# 开发依赖 (可选)
+# 如需安装开发依赖，请使用:
+# pip install -r requirements-dev.txt
